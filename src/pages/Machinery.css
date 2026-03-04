@@ -1,0 +1,382 @@
+.machinery-page {
+  animation: fadeIn 0.5s ease;
+}
+
+/* Machinery Statistics */
+.machinery-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.machinery-stats .stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.1);
+  border-left: 4px solid #1976d2;
+}
+
+.machinery-stats .stat-card.total {
+  background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+  color: white;
+  border-left: none;
+}
+
+.machinery-stats .stat-card.operational {
+  background: linear-gradient(135deg, #42a5f5 0%, #1976d2 100%);
+  color: white;
+  border-left: none;
+}
+
+.machinery-stats .stat-card.maintenance {
+  background: linear-gradient(135deg, #ff7043 0%, #f4511e 100%);
+  color: white;
+  border-left: none;
+}
+
+.machinery-stats .stat-card.out-of-service {
+  background: linear-gradient(135deg, #ef5350 0%, #c62828 100%);
+  color: white;
+  border-left: none;
+}
+
+/* Machinery Grid */
+.machinery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.machinery-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.1);
+  transition: all 0.3s ease;
+  border-top: 4px solid #1976d2;
+}
+
+.machinery-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(25, 118, 210, 0.2);
+}
+
+.machinery-card.operational {
+  border-top-color: #1976d2;
+}
+
+.machinery-card.under-maintenance {
+  border-top-color: #ff7043;
+}
+
+.machinery-card.out-of-service {
+  border-top-color: #ef5350;
+}
+
+.machinery-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.machinery-id {
+  font-family: monospace;
+  font-weight: 600;
+  color: #1976d2;
+  background: #e3f2fd;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.machinery-name {
+  font-size: 18px;
+  color: #1565c0;
+  margin-bottom: 4px;
+}
+
+.machinery-model {
+  font-size: 14px;
+  color: #78909c;
+  margin-bottom: 16px;
+}
+
+.machinery-details {
+  font-size: 13px;
+  color: #455a64;
+  margin-bottom: 16px;
+}
+
+.machinery-details p {
+  margin-bottom: 6px;
+}
+
+.service-info {
+  margin-top: 12px;
+  padding: 12px;
+  background: #e3f2fd;
+  border-radius: 8px;
+  position: relative;
+}
+
+.service-warning {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #ffebee;
+  color: #c62828;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.machinery-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  border-top: 1px solid #e3f2fd;
+  padding-top: 16px;
+}
+
+.btn-icon {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  background: #e3f2fd;
+  color: #1565c0;
+  transition: all 0.3s ease;
+}
+
+.btn-icon:hover {
+  background: #1976d2;
+  color: white;
+}
+
+.btn-icon.service:hover {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.btn-icon.edit:hover {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.btn-icon.delete:hover {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* Form row for better layout */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* Detail labels */
+.detail-label {
+  font-weight: 600;
+  color: #1565c0;
+  min-width: 100px;
+  display: inline-block;
+}
+
+/* Warranty badges */
+.warranty-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-left: 8px;
+}
+
+.warranty-badge.expired {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.warranty-badge.expiring {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+/* No results message */
+.no-results {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px;
+  background: white;
+  border-radius: 12px;
+  color: #78909c;
+  font-size: 16px;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.1);
+}
+
+/* Modal improvements */
+.modal {
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(25, 118, 210, 0.3);
+}
+
+/* Search input */
+.search-input {
+  padding: 10px 16px;
+  border: 1px solid #90caf9;
+  border-radius: 8px;
+  font-size: 14px;
+  width: 100%;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+/* Filter select */
+.filter-select {
+  padding: 10px 16px;
+  border: 1px solid #90caf9;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #1976d2;
+}
+
+/* Page header */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e3f2fd;
+}
+
+.page-header h2 {
+  color: #1565c0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+/* Debug info */
+.debug-info {
+  padding: 20px;
+  background: #e3f2fd;
+  margin: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.debug-info h4 {
+  color: #1565c0;
+  margin-bottom: 10px;
+}
+
+.debug-info p {
+  color: #546e7a;
+  margin: 5px 0;
+}
+
+/* Modal overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(25, 118, 210, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal h3 {
+  color: #1565c0;
+  margin-bottom: 20px;
+  font-size: 20px;
+}
+
+/* Form styles */
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  color: #1565c0;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #90caf9;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+/* Modal actions */
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.modal-actions .btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.modal-actions .btn-primary {
+  background: #1976d2;
+  color: white;
+  border: none;
+}
+
+.modal-actions .btn-primary:hover {
+  background: #1565c0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+}
+
+.modal-actions .btn {
+  background: #e3f2fd;
+  color: #1565c0;
+  border: none;
+}
+
+.modal-actions .btn:hover {
+  background: #bbdefb;
+}
+
