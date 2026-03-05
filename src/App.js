@@ -27,10 +27,9 @@ const MENU_ITEMS = [
   { id: 2, name: 'Doctors', icon: '👨‍⚕️', path: '/doctors' },
   { id: 3, name: 'Staff', icon: '👥', path: '/staff' },
   { id: 4, name: 'Beds', icon: '🛏️', path: '/beds' },
-  { id: 5, name: 'Patients', icon: '👤', path: '/patients' },
-  { id: 6, name: 'Laboratory', icon: '🔬', path: '/laboratory' },
-  { id: 7, name: 'Machinery', icon: '⚙️', path: '/machinery' },
-  { id: 8, name: 'Settings', icon: '⚙️', path: '/settings' }
+  // { id: 5, name: 'Patients', icon: '👤', path: '/patients' },
+  
+  { id: 8, name: 'Information', icon: '⚙️', path: '/settings' }
 ];
 
 const VALID_PATHS = ['/', '/doctors', '/staff', '/beds', '/patients', '/laboratory', '/machinery', '/settings'];

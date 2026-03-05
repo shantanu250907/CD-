@@ -32,13 +32,13 @@
 }
 
 .machinery-stats .stat-card.maintenance {
-  background: linear-gradient(135deg, #ff7043 0%, #f4511e 100%);
+  background: linear-gradient(135deg, #fbf8f6 0%, #f8f4f3 100%);
   color: white;
   border-left: none;
 }
 
 .machinery-stats .stat-card.out-of-service {
-  background: linear-gradient(135deg, #ef5350 0%, #c62828 100%);
+  background: linear-gradient(135deg, z#ff807e 0%, #f07d7d 100%);
   color: white;
   border-left: none;
 }

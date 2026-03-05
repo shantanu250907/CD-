@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect } from "react";
 import "./Laboratory.css";
 
@@ -12,6 +10,13 @@ function Laboratory() {
     "Electrocardiogram": [],
     "Treadmill Test": []
   });
+  
+  // ✅ Store original counts for stats
+  const [originalCounts, setOriginalCounts] = useState({
+    registered: 0,
+    appointments: 0
+  });
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [appointmentSearchTerm, setAppointmentSearchTerm] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
@@ -27,13 +32,10 @@ function Laboratory() {
   const [selectedTestType, setSelectedTestType] = useState("2D-Echocardiogram");
   
   const [stats, setStats] = useState({
-    total: 0,
-    male: 0,
-    female: 0
+    total: 0
   });
   
   const [loading, setLoading] = useState(false);
-  const [filterType, setFilterType] = useState("all");
 
   // ==================== HELPER FUNCTIONS ====================
   const formatSymptoms = (symptoms) => {
@@ -69,21 +71,24 @@ function Laboratory() {
 
   // ==================== LOAD DATA ====================
   useEffect(() => {
-    fetchLaboratoryData();
-    loadRegisteredPatients();
-    loadAllAppointments();
-    
-    const interval = setInterval(() => {
-      loadAllAppointments();
-      loadRegisteredPatients();
-    }, 30000);
-    
-    return () => clearInterval(interval);
+    fetchAllData();
   }, []);
+
+  const fetchAllData = async () => {
+    setLoading(true);
+    try {
+      await fetchLaboratoryData();
+      await loadRegisteredPatients();
+      await loadAllAppointments();
+    } catch (error) {
+      console.error("❌ Error fetching all data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchLaboratoryData = async () => {
     try {
-      setLoading(true);
       const response = await fetch('http://localhost:8001/api/laboratory');
       const data = await response.json();
       
@@ -93,12 +98,10 @@ function Laboratory() {
           "Electrocardiogram": [],
           "Treadmill Test": []
         });
-        setStats(data.stats || { total: 0, male: 0, female: 0 });
+        setStats({ total: data.stats?.total || 0 });
       }
     } catch (error) {
       console.error("❌ Error fetching lab data:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -108,8 +111,31 @@ function Laboratory() {
       const data = await response.json();
       
       if (data.success) {
-        setRegisteredPatients(data.data || []);
-        console.log(`✅ Loaded ${data.data?.length || 0} registered patients`);
+        const allPatients = data.data || [];
+        
+        // Store original total count
+        setOriginalCounts(prev => ({
+          ...prev,
+          registered: allPatients.length
+        }));
+        
+        // Get all lab patient IDs from current state
+        const allLabPatients = [
+          ...(laboratoryPatients["2D-Echocardiogram"] || []),
+          ...(laboratoryPatients["Electrocardiogram"] || []),
+          ...(laboratoryPatients["Treadmill Test"] || [])
+        ];
+        
+        const labPatientSourceIds = new Set(allLabPatients.map(p => p.sourceId));
+        
+        // Filter out patients that are already in laboratory
+        const filteredPatients = allPatients.filter(patient => {
+          const patientId = patient._id || patient.id;
+          return !labPatientSourceIds.has(patientId);
+        });
+        
+        setRegisteredPatients(filteredPatients);
+        console.log(`✅ Registered: ${filteredPatients.length} available (${allPatients.length} total)`);
       }
     } catch (error) {
       console.error("❌ Error fetching patients:", error);
@@ -118,17 +144,35 @@ function Laboratory() {
 
   const loadAllAppointments = async () => {
     try {
-      console.log("📅 Fetching ALL appointments from backend...");
-      
       const response = await fetch('http://localhost:8001/api/appointments');
       const data = await response.json();
       
-      console.log("📥 Backend response:", data);
-      
       if (data.success) {
         const allAppointments = data.appointments || [];
-        console.log(`✅ Found ${allAppointments.length} total appointments`);
-        setAppointments(allAppointments);
+        
+        // Store original total count
+        setOriginalCounts(prev => ({
+          ...prev,
+          appointments: allAppointments.length
+        }));
+        
+        // Get all lab patient IDs from current state
+        const allLabPatients = [
+          ...(laboratoryPatients["2D-Echocardiogram"] || []),
+          ...(laboratoryPatients["Electrocardiogram"] || []),
+          ...(laboratoryPatients["Treadmill Test"] || [])
+        ];
+        
+        const labPatientSourceIds = new Set(allLabPatients.map(p => p.sourceId));
+        
+        // Filter out appointments that are already in laboratory
+        const filteredAppointments = allAppointments.filter(apt => {
+          const aptId = apt._id || apt.id;
+          return !labPatientSourceIds.has(aptId);
+        });
+        
+        setAppointments(filteredAppointments);
+        console.log(`✅ Appointments: ${filteredAppointments.length} available (${allAppointments.length} total)`);
       } else {
         loadAppointmentsFromLocalStorage();
       }
@@ -141,28 +185,58 @@ function Laboratory() {
   const loadAppointmentsFromLocalStorage = () => {
     try {
       const allAppointments = JSON.parse(localStorage.getItem('appointments') || '[]');
-      console.log(`✅ Loaded ${allAppointments.length} appointments from localStorage`);
-      setAppointments(allAppointments);
+      
+      // Store original total count
+      setOriginalCounts(prev => ({
+        ...prev,
+        appointments: allAppointments.length
+      }));
+      
+      // Get all lab patient IDs from current state
+      const allLabPatients = [
+        ...(laboratoryPatients["2D-Echocardiogram"] || []),
+        ...(laboratoryPatients["Electrocardiogram"] || []),
+        ...(laboratoryPatients["Treadmill Test"] || [])
+      ];
+      
+      const labPatientSourceIds = new Set(allLabPatients.map(p => p.sourceId));
+      
+      const filteredAppointments = allAppointments.filter(apt => {
+        const aptId = apt.id;
+        return !labPatientSourceIds.has(aptId);
+      });
+      
+      setAppointments(filteredAppointments);
     } catch (error) {
       console.error("❌ Error loading from localStorage:", error);
       setAppointments([]);
     }
   };
 
-  // ==================== FILTER HANDLER ====================
-  const handleFilterClick = (type) => {
-    setFilterType(type);
-  };
-
-  const getFilteredLabCount = (gender) => {
-    const allLabPatients = [
-      ...(laboratoryPatients["2D-Echocardiogram"] || []),
-      ...(laboratoryPatients["Electrocardiogram"] || []),
-      ...(laboratoryPatients["Treadmill Test"] || [])
-    ];
-    
-    if (gender === "all") return allLabPatients.length;
-    return allLabPatients.filter(p => p?.gender === gender).length;
+  // ==================== FETCH PATIENTS FOR A SPECIFIC TEST ====================
+  const fetchTestPatients = async (testName) => {
+    try {
+      setLoading(true);
+      // Map test name to URL parameter
+      let urlParam = testName;
+      if (testName === "2D-Echocardiogram") urlParam = "2D-Echocardiogram";
+      else if (testName === "Electrocardiogram") urlParam = "Electrocardiogram";
+      else if (testName === "Treadmill Test") urlParam = "Treadmill Test";
+      
+      const response = await fetch(`http://localhost:8001/api/laboratory/test/${urlParam}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setLaboratoryPatients(prev => ({
+          ...prev,
+          [testName]: data.patients || []
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching test patients:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ==================== HANDLE PATIENT CLICK ====================
@@ -171,7 +245,7 @@ function Laboratory() {
     setShowTestPopup(true);
   };
 
-  // ==================== HANDLE TEST SELECTION ====================
+  // ==================== HANDLE TEST SELECTION - FIXED VERSION ====================
   const handleTestSelect = async (testName) => {
     if (!selectedPatient) return;
 
@@ -205,32 +279,53 @@ function Laboratory() {
       const data = await response.json();
 
       if (data.success) {
-        // Update laboratory patients with new data from backend
+        // ✅ Get the patient ID to remove from source
+        const patientId = selectedPatient.id || selectedPatient._id;
+        
+        // ✅ CRITICAL FIX: Remove patient from BOTH lists regardless of source type
+        // Remove from appointments
+        setAppointments(prevAppointments => {
+          const filtered = prevAppointments.filter(apt => {
+            const aptId = apt._id || apt.id;
+            return aptId !== patientId;
+          });
+          console.log(`Removed from appointments: ${prevAppointments.length} -> ${filtered.length}`);
+          return filtered;
+        });
+        
+        // Remove from registered patients
+        setRegisteredPatients(prevPatients => {
+          const filtered = prevPatients.filter(p => {
+            const pId = p._id || p.id;
+            return pId !== patientId;
+          });
+          console.log(`Removed from registered: ${prevPatients.length} -> ${filtered.length}`);
+          return filtered;
+        });
+        
+        // ✅ Update laboratory patients with the COMPLETE data from backend
         setLaboratoryPatients(data.groupedByTest || {
           "2D-Echocardiogram": [],
           "Electrocardiogram": [],
           "Treadmill Test": []
         });
-        setStats(data.stats || { total: 0, male: 0, female: 0 });
         
-        // ✅ Remove patient from source list
-        const patientId = selectedPatient.id || selectedPatient._id;
+        // ✅ Update total stats
+        setStats({ total: data.stats?.total || 0 });
         
-        if (selectedPatient.sourceType === 'appointment') {
-          setAppointments(prevAppointments => 
-            prevAppointments.filter(apt => (apt.id || apt._id) !== patientId)
-          );
-          console.log(`✅ Removed appointment with ID: ${patientId}`);
-        } else {
-          setRegisteredPatients(prevPatients => 
-            prevPatients.filter(p => (p.id || p._id) !== patientId)
-          );
-          console.log(`✅ Removed registered patient with ID: ${patientId}`);
-        }
-        
+        // ✅ Show success message and close popup
         alert(`✅ Patient added to ${testName} successfully!`);
         setShowTestPopup(false);
         setSelectedPatient(null);
+        
+        // ✅ Refresh the patient list popup if it's open
+        if (showPatientListPopup && selectedTestForList === testName) {
+          await fetchTestPatients(testName);
+        }
+        
+        // ✅ Also refresh the main lab data to ensure counts are accurate
+        await fetchLaboratoryData();
+        
       } else {
         alert(`❌ Error: ${data.message}`);
       }
@@ -242,14 +337,12 @@ function Laboratory() {
     }
   };
 
-  // ==================== ✅ FIXED: HANDLE CANCEL (Move back to registered) ====================
+  // ==================== HANDLE CANCEL (Move back to registered) ====================
   const handleCancelPatient = async () => {
     if (!patientToCancel) return;
 
     try {
       setLoading(true);
-      
-      console.log("🔄 Cancelling patient:", patientToCancel);
       
       const response = await fetch(`http://localhost:8001/api/laboratory/${patientToCancel._id}/cancel`, {
         method: 'PATCH',
@@ -257,18 +350,19 @@ function Laboratory() {
       });
 
       const data = await response.json();
-      console.log("📥 Cancel response:", data);
 
       if (data.success) {
-        // Update laboratory patients
+        // ✅ Update laboratory patients with data from backend
         setLaboratoryPatients(data.groupedByTest || {
           "2D-Echocardiogram": [],
           "Electrocardiogram": [],
           "Treadmill Test": []
         });
-        setStats(data.stats || { total: 0, male: 0, female: 0 });
         
-        // ✅ Add patient back to registered list
+        // ✅ Update stats
+        setStats({ total: data.stats?.total || 0 });
+        
+        // ✅ Immediately update registered patients list
         const cancelledPatient = {
           _id: patientToCancel.sourceId,
           patientName: patientToCancel.patientName,
@@ -280,17 +374,20 @@ function Laboratory() {
           symptoms: patientToCancel.symptoms
         };
         
-        console.log("✅ Adding patient back to registered list:", cancelledPatient);
         setRegisteredPatients(prev => {
-          const newList = [...prev, cancelledPatient];
-          console.log("Updated registered patients:", newList);
-          return newList;
+          const exists = prev.some(p => p._id === cancelledPatient._id);
+          if (exists) return prev;
+          return [...prev, cancelledPatient];
         });
+        
+        // ✅ Refresh the test folder if it's open
+        if (showPatientListPopup && selectedTestForList === patientToCancel.testName) {
+          await fetchTestPatients(patientToCancel.testName);
+        }
         
         alert(`✅ Patient ${patientToCancel.patientName} moved back to registered list`);
         setShowCancelConfirmPopup(false);
         setPatientToCancel(null);
-        setShowPatientListPopup(false);
       } else {
         alert(`❌ Error: ${data.message}`);
       }
@@ -309,27 +406,31 @@ function Laboratory() {
     try {
       setLoading(true);
       
-      console.log("🗑️ Deleting patient permanently:", patientToDelete);
-      
       const response = await fetch(`http://localhost:8001/api/laboratory/${patientToDelete._id}`, {
         method: 'DELETE'
       });
 
       const data = await response.json();
-      console.log("📥 Delete response:", data);
 
       if (data.success) {
+        // ✅ Update laboratory patients with data from backend
         setLaboratoryPatients(data.groupedByTest || {
           "2D-Echocardiogram": [],
           "Electrocardiogram": [],
           "Treadmill Test": []
         });
-        setStats(data.stats || { total: 0, male: 0, female: 0 });
+        
+        // ✅ Update stats
+        setStats({ total: data.stats?.total || 0 });
+        
+        // ✅ Refresh the test folder if it's open
+        if (showPatientListPopup && selectedTestForList === patientToDelete.testName) {
+          await fetchTestPatients(patientToDelete.testName);
+        }
         
         alert(`✅ Patient ${patientToDelete.patientName} deleted permanently`);
         setShowDeleteConfirmPopup(false);
         setPatientToDelete(null);
-        setShowPatientListPopup(false);
       } else {
         alert(`❌ Error: ${data.message}`);
       }
@@ -346,19 +447,8 @@ function Laboratory() {
     setSelectedTestForList(testName);
     setShowPatientListPopup(true);
     
-    try {
-      const response = await fetch(`http://localhost:8001/api/laboratory/test/${testName}`);
-      const data = await response.json();
-      
-      if (data.success) {
-        setLaboratoryPatients(prev => ({
-          ...prev,
-          [testName]: data.data || []
-        }));
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
+    // Fetch patients for this test
+    await fetchTestPatients(testName);
   };
 
   // ==================== HANDLE PATIENT CARD CLICK ====================
@@ -371,14 +461,12 @@ function Laboratory() {
   // ==================== HANDLE ICON CLICKS ====================
   const handleCancelIconClick = (e, patient) => {
     e.stopPropagation();
-    console.log("🔵 Cancel icon clicked for:", patient);
     setPatientToCancel(patient);
     setShowCancelConfirmPopup(true);
   };
 
   const handleDeleteIconClick = (e, patient) => {
     e.stopPropagation();
-    console.log("🔴 Delete icon clicked for:", patient);
     setPatientToDelete(patient);
     setShowDeleteConfirmPopup(true);
   };
@@ -473,11 +561,7 @@ function Laboratory() {
 
       {/* STATS CARDS */}
       <div className="stats-row">
-        <div 
-          className={`stat-card ${filterType === 'all' ? 'active-filter' : ''}`}
-          style={{ borderLeft: "4px solid #667eea", cursor: "pointer" }}
-          onClick={() => handleFilterClick('all')}
-        >
+        <div className="stat-card" style={{ borderLeft: "4px solid #667eea" }}>
           <div className="stat-icon">👥</div>
           <div className="stat-info">
             <span className="stat-label">Total Lab Patients</span>
@@ -485,35 +569,11 @@ function Laboratory() {
           </div>
         </div>
         
-        <div 
-          className={`stat-card ${filterType === 'male' ? 'active-filter' : ''}`}
-          style={{ borderLeft: "4px solid #4facfe", cursor: "pointer" }}
-          onClick={() => handleFilterClick('male')}
-        >
-          <div className="stat-icon">👨</div>
-          <div className="stat-info">
-            <span className="stat-label">Male</span>
-            <span className="stat-value">{stats?.male || 0}</span>
-          </div>
-        </div>
-        
-        <div 
-          className={`stat-card ${filterType === 'female' ? 'active-filter' : ''}`}
-          style={{ borderLeft: "4px solid #f093fb", cursor: "pointer" }}
-          onClick={() => handleFilterClick('female')}
-        >
-          <div className="stat-icon">👩</div>
-          <div className="stat-info">
-            <span className="stat-label">Female</span>
-            <span className="stat-value">{stats?.female || 0}</span>
-          </div>
-        </div>
-        
         <div className="stat-card" style={{ borderLeft: "4px solid #ff9800" }}>
           <div className="stat-icon">📋</div>
           <div className="stat-info">
             <span className="stat-label">Registered Patients</span>
-            <span className="stat-value">{registeredPatients?.length || 0}</span>
+            <span className="stat-value">{originalCounts.registered}</span>
           </div>
         </div>
 
@@ -521,20 +581,10 @@ function Laboratory() {
           <div className="stat-icon">📋</div>
           <div className="stat-info">
             <span className="stat-label">Total Appointments</span>
-            <span className="stat-value">{appointments?.length || 0}</span>
+            <span className="stat-value">{originalCounts.appointments}</span>
           </div>
         </div>
       </div>
-
-      {/* FILTER INDICATOR */}
-      {/* {filterType !== 'all' && (
-        <div className="filter-indicator">
-          <span>🔍 Showing {filterType} patients only</span>
-          <button className="clear-filter" onClick={() => setFilterType('all')}>
-            Clear Filter ✕
-          </button>
-        </div>
-      )} */}
 
       {/* TEST FOLDERS */}
       <div className="lab-tests-section">
@@ -569,7 +619,8 @@ function Laboratory() {
       <div className="appointments-section">
         <div className="section-header">
           <h2>📋 All Appointments</h2>
-          <span className="badge">{appointments?.length || 0} total</span>
+          <span className="badge">{appointments?.length || 0} available</span>
+          <small className="total-count">(Total: {originalCounts.appointments})</small>
         </div>
 
         <div className="search-box">
@@ -607,7 +658,10 @@ function Laboratory() {
           ) : (
             <div className="empty-state">
               <span className="empty-icon">📋</span>
-              <p>{appointmentSearchTerm ? "No matching appointments found" : "No appointments found"}</p>
+              <p>{appointmentSearchTerm ? "No matching appointments found" : "No available appointments"}</p>
+              {originalCounts.appointments > 0 && (
+                <small>{originalCounts.appointments} total appointments, but all are assigned to tests</small>
+              )}
             </div>
           )}
         </div>
@@ -617,7 +671,8 @@ function Laboratory() {
       <div className="registered-patients-section">
         <div className="section-header">
           <h2>📋 Registered Patients</h2>
-          <span className="badge">{registeredPatients?.length || 0} total</span>
+          <span className="badge">{registeredPatients?.length || 0} available</span>
+          <small className="total-count">(Total: {originalCounts.registered})</small>
         </div>
 
         <div className="search-box">
@@ -654,7 +709,10 @@ function Laboratory() {
           ) : (
             <div className="empty-state">
               <span className="empty-icon">📋</span>
-              <p>{searchTerm ? "No matching patients found" : "No registered patients"}</p>
+              <p>{searchTerm ? "No matching patients found" : "No available patients"}</p>
+              {originalCounts.registered > 0 && (
+                <small>{originalCounts.registered} total patients, but all are assigned to tests</small>
+              )}
             </div>
           )}
         </div>
@@ -696,7 +754,7 @@ function Laboratory() {
         </div>
       )}
 
-      {/* TEST FOLDER POPUP with BOTH Cancel and Delete buttons */}
+      {/* TEST FOLDER POPUP */}
       {showPatientListPopup && selectedTestForList && (
         <div className="popup-overlay" onClick={() => setShowPatientListPopup(false)}>
           <div className="popup-card large-popup" onClick={(e) => e.stopPropagation()}>
@@ -712,56 +770,52 @@ function Laboratory() {
               <button className="close-btn" onClick={() => setShowPatientListPopup(false)}>×</button>
             </div>
             <div className="popup-content">
-              {(laboratoryPatients[selectedTestForList] || []).length > 0 ? (
+              {laboratoryPatients[selectedTestForList]?.length > 0 ? (
                 <div className="patient-grid-2col">
-                  {(laboratoryPatients[selectedTestForList] || [])
-                    .filter(patient => filterType === 'all' || patient?.gender?.toLowerCase() === filterType)
-                    .map((patient) => (
-                      <div key={patient._id} className="patient-card-modern with-actions">
-                        <div className="patient-card-main" onClick={() => handlePatientCardClick(patient)}>
-                          <div className="patient-card-header">
-                            <div className="patient-avatar-large">
-                              {patient.gender === "Male" ? "👨" : "👩"}
-                            </div>
-                            <div className="patient-name-section">
-                              <h4>{patient.patientName}</h4>
-                              <span className="patient-age-gender">{patient.age}y • {patient.gender}</span>
-                            </div>
+                  {laboratoryPatients[selectedTestForList].map((patient) => (
+                    <div key={patient._id} className="patient-card-modern with-actions">
+                      <div className="patient-card-main" onClick={() => handlePatientCardClick(patient)}>
+                        <div className="patient-card-header">
+                          <div className="patient-avatar-large">
+                            {patient.gender === "Male" ? "👨" : "👩"}
                           </div>
-                          <div className="patient-card-body">
-                            <div className="info-row">
-                              <span className="info-icon">📞</span>
-                              <span>{patient.phone}</span>
-                            </div>
-                            <div className="info-row">
-                              <span className="info-icon">⏰</span>
-                              <span>{patient.testTime}</span>
-                            </div>
-                            {patient.symptoms && (
-                              <div className="info-row">
-                                <span className="info-icon">🩺</span>
-                                <span>{formatSymptoms(patient.symptoms)}</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="patient-card-footer">
-                            <span className="click-hint">Click to view report →</span>
+                          <div className="patient-name-section">
+                            <h4>{patient.patientName}</h4>
+                            <span className="patient-age-gender">{patient.age}y • {patient.gender}</span>
                           </div>
                         </div>
-                        <div className="action-buttons">
-                          {/* ✅ Cancel button to move back to registered list */}
-                          
-                          {/* ✅ Delete button for permanent deletion */}
-                          <button 
-                            className="delete-btn-small"
-                            onClick={(e) => handleDeleteIconClick(e, patient)}
-                            title="Delete permanently"
-                          >
-                            🗑️
-                          </button>
+                        <div className="patient-card-body">
+                          <div className="info-row">
+                            <span className="info-icon">📞</span>
+                            <span>{patient.phone}</span>
+                          </div>
+                          <div className="info-row">
+                            <span className="info-icon">⏰</span>
+                            <span>{patient.createdAt ? formatDate(patient.createdAt) : "-"}</span>
+                          </div>
+                          {patient.symptoms && (
+                            <div className="info-row">
+                              <span className="info-icon">🩺</span>
+                              <span>{formatSymptoms(patient.symptoms)}</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="patient-card-footer">
+                          <span className="click-hint">Click to view report →</span>
                         </div>
                       </div>
-                    ))}
+                      <div className="action-buttons">
+                        {/* Delete button for permanent deletion */}
+                        <button 
+                          className="delete-btn-small"
+                          onClick={(e) => handleDeleteIconClick(e, patient)}
+                          title="Delete permanently"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="empty-state">
@@ -769,32 +823,6 @@ function Laboratory() {
                   <p>No patients in this folder</p>
                 </div>
               )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ✅ CANCEL CONFIRMATION POPUP */}
-      {showCancelConfirmPopup && patientToCancel && (
-        <div className="popup-overlay" onClick={() => setShowCancelConfirmPopup(false)}>
-          <div className="popup-card confirm-popup" onClick={(e) => e.stopPropagation()}>
-            <div className="popup-header" style={{ background: "linear-gradient(135deg, #ff9800, #f57c00)" }}>
-              <h3>↩️ Confirm Move to Registered</h3>
-              <button className="close-btn" onClick={() => setShowCancelConfirmPopup(false)}>×</button>
-            </div>
-            <div className="popup-content">
-              <div className="confirm-icon">↩️</div>
-              <p className="confirm-message">
-                Move <strong>{patientToCancel.patientName}</strong> back to registered patients list?
-              </p>
-              <div className="confirm-actions">
-                <button className="cancel-btn" onClick={() => setShowCancelConfirmPopup(false)}>
-                  No
-                </button>
-                <button className="confirm-btn" onClick={handleCancelPatient}>
-                  Yes, Move
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -818,9 +846,8 @@ function Laboratory() {
                 <button className="cancel-btn" onClick={() => setShowDeleteConfirmPopup(false)}>
                   Cancel
                 </button>
-                <br/>
                 <button className="confirm-delete-btn" onClick={handleDeletePatient}>
-                  Delete
+                  Yes, Delete
                 </button>
               </div>
             </div>
@@ -828,7 +855,7 @@ function Laboratory() {
         </div>
       )}
 
-      {/* REPORT POPUP with Symptoms and Doctor Name */}
+      {/* REPORT POPUP */}
       {showReportPopup && selectedReportPatient && (
         <div className="popup-overlay" onClick={() => setShowReportPopup(false)}>
           <div className="popup-card report-popup" onClick={(e) => e.stopPropagation()}>
@@ -847,7 +874,7 @@ function Laboratory() {
               <div className="report-title">
                 <span className="title-icon">{getReportDetails(selectedTestType).icon}</span>
                 <h1 style={{color:"white"}}>{getReportDetails(selectedTestType).title}</h1>
-                <span className="report-id">#{selectedReportPatient.testId?.slice(-6)}</span>
+                <span className="report-id">#{selectedReportPatient._id?.slice(-6)}</span>
               </div>
             </div>
             <div className="report-body">
@@ -872,7 +899,7 @@ function Laboratory() {
                   </div>
                   <div className="detail-group">
                     <label>Test Date</label>
-                    <div className="detail-value">{formatDate(selectedReportPatient.testDate)}</div>
+                    <div className="detail-value">{formatDate(selectedReportPatient.createdAt)}</div>
                   </div>
                   <div className="detail-group">
                     <label>Blood Group</label>

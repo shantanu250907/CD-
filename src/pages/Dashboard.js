@@ -33,9 +33,8 @@ const Dashboard = () => {
   const [stats, setStats] = useState({
     staff: 0,
     beds: 0,
-    patients: 0,
-    laboratory: 0,
-    machinery: 0
+    Doctor: 0,
+    Information: 0
   });
   const [loading, setLoading] = useState(true);
   const [recentActivities, setRecentActivities] = useState([]);
@@ -78,10 +77,10 @@ const Dashboard = () => {
     // If it has data array
     if (responseData.data && Array.isArray(responseData.data)) return responseData.data.length;
     
-    // If it has patients array (for laboratory)
+    // If it has patients array (for Doctor)
     if (responseData.patients && Array.isArray(responseData.patients)) return responseData.patients.length;
     
-    // If it has groupedByTest (for laboratory)
+    // If it has groupedByTest (for Doctor)
     if (responseData.groupedByTest) {
       const grouped = responseData.groupedByTest;
       return (
@@ -110,15 +109,13 @@ const Dashboard = () => {
       const [
         staffRes,
         bedsRes,
-        patientsRes,
         labRes,
-        machineryRes
+        InformationRes
       ] = await Promise.allSettled([
         fetch(`${API_URL}/api/staff`),
         fetch(`${API_URL}/api/beds`),
-        fetch(`${API_URL}/api/patients`),
-        fetch(`${API_URL}/api/laboratory`),
-        fetch(`${API_URL}/api/machinery`)
+        fetch(`${API_URL}/api/Doctor`),
+        fetch(`${API_URL}/api/Information`)
       ]);
 
       // Process staff data
@@ -147,25 +144,12 @@ const Dashboard = () => {
         console.warn('Failed to fetch beds data');
       }
 
-      // Process patients data
-      let patientsCount = 0;
-      let patientsData = [];
-      if (patientsRes.status === 'fulfilled' && patientsRes.value.ok) {
-        const data = await patientsRes.value.json();
-        console.log('📥 Patients API response:', data);
-        patientsCount = extractCount(data);
-        patientsData = data.data || (Array.isArray(data) ? data : []);
-        console.log('👥 Patient count extracted:', patientsCount);
-      } else {
-        console.warn('Failed to fetch patients data');
-      }
-
-      // Process laboratory data
+      // Process Doctor data
       let labCount = 0;
       let labData = [];
       if (labRes.status === 'fulfilled' && labRes.value.ok) {
         const data = await labRes.value.json();
-        console.log('📥 Laboratory API response:', data);
+        console.log('📥 Doctor API response:', data);
         labCount = extractCount(data);
         
         // Extract lab data based on structure
@@ -185,42 +169,40 @@ const Dashboard = () => {
         
         console.log('🔬 Lab count extracted:', labCount);
       } else {
-        console.warn('Failed to fetch laboratory data');
+        console.warn('Failed to fetch Doctor data');
       }
 
-      // Process machinery data
-      let machineryCount = 0;
-      let machineryData = [];
-      if (machineryRes.status === 'fulfilled' && machineryRes.value.ok) {
-        const data = await machineryRes.value.json();
-        console.log('📥 Machinery API response:', data);
-        machineryCount = extractCount(data);
-        machineryData = data.data || (Array.isArray(data) ? data : []);
-        console.log('⚙️ Machinery count extracted:', machineryCount);
+      // Process Information data
+      let InformationCount = 0;
+      let InformationData = [];
+      if (InformationRes.status === 'fulfilled' && InformationRes.value.ok) {
+        const data = await InformationRes.value.json();
+        console.log('📥 Information API response:', data);
+        InformationCount = extractCount(data);
+        InformationData = data.data || (Array.isArray(data) ? data : []);
+        console.log('⚙️ Information count extracted:', InformationCount);
       } else {
-        console.warn('Failed to fetch machinery data');
+        console.warn('Failed to fetch Information data');
       }
 
       // Update stats with actual counts
       const newStats = {
         staff: staffCount,
         beds: bedsCount,
-        patients: patientsCount,
-        laboratory: labCount,
-        machinery: machineryCount
+        Doctor: labCount,
+        Information: InformationCount
       };
 
       console.log('📊 Final stats object:', newStats);
       setStats(newStats);
 
       // Generate recent activities from real data
-      if (patientsData.length > 0 || staffData.length > 0 || bedsData.length > 0 || labData.length > 0 || machineryData.length > 0) {
+      if (staffData.length > 0 || bedsData.length > 0 || labData.length > 0 || InformationData.length > 0) {
         generateRecentActivities({
           staff: staffData,
           beds: bedsData,
-          patients: patientsData,
-          laboratory: labData,
-          machinery: machineryData
+          Doctor: labData,
+          Information: InformationData
         });
       } else {
         generateMockActivities();
@@ -232,9 +214,8 @@ const Dashboard = () => {
       const mockStats = {
         staff: 24,
         beds: 45,
-        patients: 189,
-        laboratory: 89,
-        machinery: 15
+        Doctor: 89,
+        Information: 15
       };
       console.log('📊 Using mock stats:', mockStats);
       setStats(mockStats);
@@ -248,28 +229,9 @@ const Dashboard = () => {
   const generateRecentActivities = (data) => {
     const activities = [];
 
-    // Add recent patients
-    if (data.patients && data.patients.length > 0) {
-      data.patients.slice(-3).reverse().forEach(patient => {
-        const patientName = patient.patientName || patient.name || 'Unknown';
-        const patientId = patient._id || patient.id;
-        const createdAt = patient.createdAt || patient.registeredDate || patient.admitted;
-        
-        activities.push({
-          id: `pat-${patientId || Date.now()}-${Math.random()}`,
-          type: 'patient',
-          title: `New patient registered: ${patientName}`,
-          time: timeAgo(createdAt),
-          icon: '👤',
-          color: '#4CAF50',
-          timestamp: createdAt ? new Date(createdAt).getTime() : Date.now()
-        });
-      });
-    }
-
     // Add recent lab tests
-    if (data.laboratory && data.laboratory.length > 0) {
-      data.laboratory.slice(-3).reverse().forEach(test => {
+    if (data.Doctor && data.Doctor.length > 0) {
+      data.Doctor.slice(-3).reverse().forEach(test => {
         const testId = test._id || test.id;
         const updatedAt = test.updatedAt || test.createdAt;
         const patientName = test.patientName || test.patient || 'patient';
@@ -280,8 +242,8 @@ const Dashboard = () => {
             type: 'lab',
             title: `Lab test completed for ${patientName}`,
             time: timeAgo(updatedAt),
-            icon: '🔬',
-            color: '#FF9800',
+            icon: '👨‍⚕️',
+            color: '#7c3aed',
             timestamp: updatedAt ? new Date(updatedAt).getTime() : Date.now()
           });
         } else {
@@ -290,17 +252,17 @@ const Dashboard = () => {
             type: 'lab',
             title: `New lab test requested for ${patientName}`,
             time: timeAgo(test.createdAt),
-            icon: '🔬',
-            color: '#FF9800',
+            icon: '👨‍⚕️',
+            color: '#7c3aed',
             timestamp: test.createdAt ? new Date(test.createdAt).getTime() : Date.now()
           });
         }
       });
     }
 
-    // Add recent machinery updates
-    if (data.machinery && data.machinery.length > 0) {
-      data.machinery.slice(-3).reverse().forEach(machine => {
+    // Add recent Information updates
+    if (data.Information && data.Information.length > 0) {
+      data.Information.slice(-3).reverse().forEach(machine => {
         const machineId = machine._id || machine.id;
         const machineName = machine.name || 'Equipment';
         const updatedAt = machine.updatedAt || machine.createdAt;
@@ -308,21 +270,21 @@ const Dashboard = () => {
         if (machine.status === 'Under Maintenance') {
           activities.push({
             id: `mac-${machineId || Date.now()}-${Math.random()}`,
-            type: 'machinery',
+            type: 'Information',
             title: `${machineName} is under maintenance`,
             time: timeAgo(updatedAt),
-            icon: '⚙️',
-            color: '#607D8B',
+            icon: '💻',
+            color: '#64748b',
             timestamp: updatedAt ? new Date(updatedAt).getTime() : Date.now()
           });
         } else if (machine.lastService) {
           activities.push({
             id: `mac-${machineId || Date.now()}-${Math.random()}`,
-            type: 'machinery',
+            type: 'Information',
             title: `${machineName} service completed`,
             time: timeAgo(machine.lastService),
-            icon: '⚙️',
-            color: '#607D8B',
+            icon: '💻',
+            color: '#64748b',
             timestamp: new Date(machine.lastService).getTime()
           });
         }
@@ -343,7 +305,7 @@ const Dashboard = () => {
             title: `Bed ${bedNumber} occupied`,
             time: timeAgo(updatedAt),
             icon: '🛏️',
-            color: '#2196F3',
+            color: '#ff9800',
             timestamp: updatedAt ? new Date(updatedAt).getTime() : Date.now()
           });
         } else if (bed.status === 'Available') {
@@ -353,7 +315,7 @@ const Dashboard = () => {
             title: `Bed ${bedNumber} is now available`,
             time: timeAgo(updatedAt),
             icon: '🛏️',
-            color: '#2196F3',
+            color: '#ff9800',
             timestamp: updatedAt ? new Date(updatedAt).getTime() : Date.now()
           });
         }
@@ -373,7 +335,7 @@ const Dashboard = () => {
           title: `New staff member joined: ${memberName}`,
           time: timeAgo(createdAt),
           icon: '👥',
-          color: '#9C27B0',
+          color: '#9c27b0',
           timestamp: createdAt ? new Date(createdAt).getTime() : Date.now()
         });
       });
@@ -396,47 +358,38 @@ const Dashboard = () => {
     const mockActivities = [
       {
         id: 1,
-        type: 'patient',
-        title: 'New patient registered: Rahul Sharma',
-        time: '10 minutes ago',
-        icon: '👤',
-        color: '#4CAF50',
-        timestamp: Date.now() - 10 * 60 * 1000
-      },
-      {
-        id: 2,
         type: 'lab',
         title: 'Lab test completed for patient #2345',
         time: '25 minutes ago',
-        icon: '🔬',
-        color: '#FF9800',
+        icon: '👨‍⚕️',
+        color: '#7c3aed',
         timestamp: Date.now() - 25 * 60 * 1000
       },
       {
-        id: 3,
-        type: 'machinery',
+        id: 2,
+        type: 'Information',
         title: 'X-Ray Machine service completed',
         time: '1 hour ago',
-        icon: '⚙️',
-        color: '#607D8B',
+        icon: '💻',
+        color: '#64748b',
         timestamp: Date.now() - 60 * 60 * 1000
       },
       {
-        id: 4,
+        id: 3,
         type: 'bed',
         title: 'Patient admitted to Bed B12',
         time: '2 hours ago',
         icon: '🛏️',
-        color: '#2196F3',
+        color: '#ff9800',
         timestamp: Date.now() - 2 * 60 * 60 * 1000
       },
       {
-        id: 5,
+        id: 4,
         type: 'staff',
         title: 'New staff member joined: Priya Singh',
         time: '3 hours ago',
         icon: '👥',
-        color: '#9C27B0',
+        color: '#9c27b0',
         timestamp: Date.now() - 3 * 60 * 60 * 1000
       }
     ];
@@ -456,11 +409,10 @@ const Dashboard = () => {
 
     // Subscribe to global events
     if (window.EventBus) {
-      window.EventBus.subscribe('patientDataChanged', handleDataChange);
       window.EventBus.subscribe('staffDataChanged', handleDataChange);
-      window.EventBus.subscribe('laboratoryDataChanged', handleDataChange);
+      window.EventBus.subscribe('DoctorDataChanged', handleDataChange);
       window.EventBus.subscribe('bedsDataChanged', handleDataChange);
-      window.EventBus.subscribe('machineryDataChanged', handleDataChange);
+      window.EventBus.subscribe('InformationDataChanged', handleDataChange);
     }
 
     // Auto-refresh every 30 seconds as backup
@@ -486,7 +438,35 @@ const Dashboard = () => {
     navigate(path);
   };
 
-  // Stat cards data - using actual stats from state
+  // Handle summary card click
+  const handleStatCardClick = (title) => {
+    switch(title) {
+      case 'Doctor':
+        navigate('/Doctor');
+        break;
+      case 'Information':
+        navigate('/Information');
+        break;
+      case 'Staff':
+        navigate('/staff');
+        break;
+      case 'Beds':
+        navigate('/beds');
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    // Clear any auth tokens/session data here
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
+
+  // Stat cards data - 4 cards
   const statCards = [
     {
       id: 1,
@@ -495,7 +475,6 @@ const Dashboard = () => {
       icon: '👥',
       color: '#2196F3',
       bgColor: '#E3F2FD',
-      path: '/staff'
     },
     {
       id: 2,
@@ -504,80 +483,61 @@ const Dashboard = () => {
       icon: '🛏️',
       color: '#FF9800',
       bgColor: '#FFF3E0',
-      path: '/beds'
     },
     {
       id: 3,
-      title: 'Patients',
-      value: stats.patients,
-      icon: '🏥',
-      color: '#4CAF50',
-      bgColor: '#E8F5E9',
-      path: '/patients'
+      title: 'Doctor',
+      value: stats.Doctor,
+      icon: '👨‍⚕️',
+      color: '#7c3aed',
+      bgColor: '#ede9fe',
     },
     {
       id: 4,
-      title: 'Laboratory',
-      value: stats.laboratory,
-      icon: '🔬',
-      color: '#F44336',
-      bgColor: '#FFEBEE',
-      path: '/laboratory'
-    },
-    {
-      id: 5,
-      title: 'Machinery',
-      value: stats.machinery,
-      icon: '⚙️',
-      color: '#607D8B',
-      bgColor: '#ECEFF1',
-      path: '/machinery'
+      title: 'Information',
+      value: stats.Information,
+      icon: '💻',
+      color: '#64748b',
+      bgColor: '#f1f5f9',
     }
   ];
 
-  // Quick actions - THIS WAS MISSING!
+  // Quick actions
   const quickActions = [
     {
       id: 1,
       title: 'Add Staff',
       icon: '👥',
       color: '#2196F3',
-      action: () => handleNavigation('/staff')
+      path: '/staff'
     },
     {
       id: 2,
       title: 'Manage Beds',
       icon: '🛏️',
       color: '#FF9800',
-      action: () => handleNavigation('/beds')
+      path: '/beds'
     },
     {
       id: 3,
-      title: 'New Patient',
-      icon: '🏥',
-      color: '#4CAF50',
-      action: () => handleNavigation('/patients')
+      title: 'Doctor',
+      icon: '👨‍⚕️',
+      color: '#7c3aed',
+      path: '/Doctor'
     },
     {
       id: 4,
-      title: 'Lab Test',
-      icon: '🔬',
-      color: '#F44336',
-      action: () => handleNavigation('/laboratory')
+      title: 'Add Information',
+      icon: '💻',
+      color: '#64748b',
+      path: '/Information'
     },
     {
       id: 5,
-      title: 'Add Machinery',
-      icon: '⚙️',
-      color: '#607D8B',
-      action: () => handleNavigation('/machinery')
-    },
-    {
-      id: 6,
-      title: 'Settings',
-      icon: '⚙️',
+      title: 'Dashboard',
+      icon: '📊',
       color: '#9E9E9E',
-      action: () => handleNavigation('/settings')
+      path: '/'
     }
   ];
 
@@ -590,114 +550,106 @@ const Dashboard = () => {
     );
   }
 
-  // Debug: Log the stats right before rendering
-  console.log('🎨 Rendering with stats:', stats);
-
   return (
-    <div className="dashboard-container">
-      {/* Welcome Header */}
-      <div className="dashboard-header">
-        <div className="welcome-section">
-          <h1>Welcome back, Admin</h1>
-          <p className="date">{formatDate()}</p>
-        </div>
-        <div className="header-actions">
-          <div className="profile-mini">
-            <span className="profile-avatar">👤</span>
+    <div className="dashboard-wrapper">
+      {/* Simple Header with Logout */}
+      <div className="dashboard-top-bar">
+        <div className="top-bar-left">
+          <div className="hospital-name">
+            <span className="hospital-icon">🏥</span>
+            <h2>City Hospital - Admin Panel</h2>
           </div>
+        </div>
+        <div className="top-bar-right">
+          <div className="admin-profile">
+            <span className="admin-name">Admin</span>
+            <div className="profile-icon">👤</div>
+          </div>
+          <button className="logout-top-btn" onClick={handleLogout}>
+            <span className="logout-icon">🚪</span>
+            <span>Logout</span>
+          </button>
         </div>
       </div>
 
-      {/* Statistics Cards - Now showing actual counts */}
-      <div className="stats-grid">
-        {statCards.map(stat => (
-          <div 
-            key={stat.id} 
-            className="stat-card"
-            onClick={() => handleNavigation(stat.path)}
-            style={{ cursor: 'pointer' }}
-          >
-            <div className="stat-icon" style={{ backgroundColor: stat.bgColor, color: stat.color }}>
-              {stat.icon}
-            </div>
-            <div className="stat-content">
-              <h3>{stat.value}</h3>
-              <p>{stat.title}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Quick Actions and Recent Activity */}
-      <div className="dashboard-grid">
-        {/* Quick Actions Section */}
-        <div className="quick-actions-section">
-          <div className="section-header">
-            <h2>Quick Actions</h2>
-          </div>
-          <div className="quick-actions-grid">
-            {quickActions.map(action => (
-              <button
-                key={action.id}
-                className="quick-action-card"
-                onClick={action.action}
-              >
-                <div className="action-icon" style={{ backgroundColor: `${action.color}20`, color: action.color }}>
-                  {action.icon}
-                </div>
-                <span className="action-title">{action.title}</span>
-              </button>
-            ))}
+      {/* Main Dashboard Content */}
+      <div className="dashboard-container">
+        {/* Welcome Header */}
+        <div className="dashboard-header">
+          <div className="welcome-section">
+            <h1>Welcome back, Admin</h1>
+            <p className="date">{formatDate()}</p>
           </div>
         </div>
 
-        {/* Recent Activity Section */}
-        <div className="recent-activity-section">
-          <div className="section-header">
-            <h2>Recent Activity</h2>
-            <button className="view-all-btn">View All</button>
-          </div>
-          <div className="activity-list">
-            {recentActivities.length > 0 ? (
-              recentActivities.map(activity => (
-                <div key={activity.id} className="activity-item">
-                  <div className="activity-icon" style={{ backgroundColor: `${activity.color}20`, color: activity.color }}>
-                    {activity.icon}
-                  </div>
-                  <div className="activity-content">
-                    <p className="activity-title">{activity.title}</p>
-                    <span className="activity-time">{activity.time}</span>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="no-activities">
-                <p>No recent activities</p>
+        {/* Statistics Cards - 4 cards in a row */}
+        <div className="stats-row">
+          {statCards.map(stat => (
+            <div 
+              key={stat.id} 
+              className="stat-card-large"
+              onClick={() => handleStatCardClick(stat.title)}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="stat-icon-large" style={{ backgroundColor: stat.bgColor, color: stat.color }}>
+                {stat.icon}
               </div>
-            )}
-          </div>
+              <div className="stat-content-large">
+                <h3>{stat.value.toLocaleString()}</h3>
+                <p>{stat.title}</p>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
 
-      {/* Chart Section - You can remove this if not needed */}
-      <div className="chart-section">
-        <div className="section-header">
-          <h2>Weekly Overview</h2>
-          <div className="chart-filters">
-            <button className="filter-btn active">Week</button>
-            <button className="filter-btn">Month</button>
-            <button className="filter-btn">Year</button>
+        {/* Quick Actions and Recent Activity */}
+        <div className="dashboard-grid">
+          {/* Quick Actions Section */}
+          <div className="quick-actions-section">
+            <div className="section-header">
+              <h2>Quick Actions</h2>
+            </div>
+            <div className="quick-actions-grid">
+              {quickActions.map(action => (
+                <button
+                  key={action.id}
+                  className="quick-action-card"
+                  onClick={() => handleNavigation(action.path)}
+                >
+                  <div className="action-icon" style={{ backgroundColor: `${action.color}20`, color: action.color }}>
+                    {action.icon}
+                  </div>
+                  <span className="action-title">{action.title}</span>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="chart-placeholder">
-          <div className="mock-chart">
-            <div className="chart-bar" style={{ height: '60%' }}></div>
-            <div className="chart-bar" style={{ height: '80%' }}></div>
-            <div className="chart-bar" style={{ height: '45%' }}></div>
-            <div className="chart-bar" style={{ height: '70%' }}></div>
-            <div className="chart-bar" style={{ height: '55%' }}></div>
-            <div className="chart-bar" style={{ height: '90%' }}></div>
-            <div className="chart-bar" style={{ height: '65%' }}></div>
+
+          {/* Recent Activity Section */}
+          <div className="recent-activity-section">
+            <div className="section-header">
+              <h2>Recent Activity</h2>
+              <button className="view-all-btn">View All</button>
+            </div>
+            <div className="activity-list">
+              {recentActivities.length > 0 ? (
+                recentActivities.map(activity => (
+                  <div key={activity.id} className="activity-item">
+                    <div className="activity-icon" style={{ backgroundColor: `${activity.color}20`, color: activity.color }}>
+                      {activity.icon}
+                    </div>
+                    <div className="activity-content">
+                      <p className="activity-title">{activity.title}</p>
+                      <span className="activity-time">{activity.time}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="no-activities">
+                  <p>No recent activities</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
