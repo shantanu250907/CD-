@@ -665,17 +665,17 @@ input[type="number"] {
 }
 
 .activity-list::-webkit-scrollbar-track {
-  background: var(--gray-100);
+  background: white;
   border-radius: 10px;
 }
 
 .activity-list::-webkit-scrollbar-thumb {
-  background: var(--gray-300);
+  background: white;
   border-radius: 10px;
 }
 
 .activity-list::-webkit-scrollbar-thumb:hover {
-  background: var(--gray-400);
+  background: white;
 }
 
 .activity-item {
@@ -683,10 +683,10 @@ input[type="number"] {
   align-items: center;
   gap: 16px;
   padding: 16px;
-  background: var(--gray-50);
+  background: white;
   border-radius: 16px;
   transition: var(--transition);
-  border: 1px solid var(--gray-200);
+  border: white;
   animation: slideIn 0.3s ease-out;
 }
 
@@ -694,7 +694,7 @@ input[type="number"] {
   transform: translateX(5px);
   background: white;
   border-color: var(--secondary);
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
 }
 
 @keyframes slideIn {
@@ -728,7 +728,7 @@ input[type="number"] {
   margin: 0 0 6px;
   font-size: 15px;
   font-weight: 500;
-  color: var(--gray-800);
+  color: white;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -755,7 +755,7 @@ input[type="number"] {
   padding: 40px 20px;
   color: var(--gray-500);
   font-size: 15px;
-  background: var(--gray-50);
+  background: white;
   border-radius: 16px;
   border: 2px dashed var(--gray-200);
 }
@@ -969,7 +969,7 @@ input[type="number"] {
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .admin-main-content {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    background: linear-gradient(135deg, lch(44.43% 98.55 297.11) 0%, #003da0 100%);
   }
   
   .admin-sidebar {
@@ -980,41 +980,74 @@ input[type="number"] {
   .stat-card-large,
   .quick-actions-section,
   .recent-activity-section {
-    background: var(--gray-800);
-    border-color: var(--gray-700);
+    background-color:#0288d1;
   }
   
   .welcome-section h1,
   .stat-content-large h3,
   .section-header h2,
   .activity-title {
-    color: white;
+    color: rgb(0, 0, 0);
   }
   
   .welcome-section .date,
   .stat-content-large p,
   .activity-time {
-    color: var(--gray-400);
-  }
-  
-  .quick-action-card {
-    background: var(--gray-700);
-  }
-  
-  .quick-action-card:hover {
-    background: var(--gray-800);
-  }
-  
-  .action-title {
     color: white;
   }
   
+  .quick-action-card {
+    background: white;
+  }
+  
+  .quick-action-card:hover {
+    background-color: white;
+  }
+  
+  .action-title {
+    color: rgb(0, 0, 0);
+  }
+  
   .activity-item {
-    background: var(--gray-700);
-    border-color: var(--gray-600);
+    background: white;
   }
   
   .activity-item:hover {
-    background: var(--gray-800);
+    background: white;
+  }
+}
+
+/* 3 cards in a row */
+.stats-row-three {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 30px;
+}
+
+/* 3 quick actions in a row */
+.quick-actions-grid-three {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .stats-row-three {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .quick-actions-grid-three {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-row-three {
+    grid-template-columns: 1fr;
+  }
+  .quick-actions-grid-three {
+    grid-template-columns: 1fr;
   }
 }

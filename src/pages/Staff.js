@@ -1135,11 +1135,1377 @@
 // export default Staff;
 
 
+// import React, { useState, useEffect } from 'react';
+// import './Staff.css';
+
+// // ✅ Use the same port as your backend (check which one is working)
+// // Try both ports to see which one works
+// const API_URL = 'http://localhost:8005';
+
+// const Staff = () => {
+//   const [staff, setStaff] = useState([]);
+//   const [showForm, setShowForm] = useState(false);
+//   const [showDetails, setShowDetails] = useState(null);
+//   const [editingStaff, setEditingStaff] = useState(null);
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [filterRole, setFilterRole] = useState('all');
+//   const [filterStatus, setFilterStatus] = useState('all');
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+//   const [formData, setFormData] = useState({
+//     name: '',
+//     role: '',
+//     department: '',
+//     shift: '',
+//     status: 'On Duty',
+//     contact: '',
+//     email: '',
+//     salary: '',
+//     joinDate: ''
+//   });
+
+//   // ==================== FETCH STAFF FROM BACKEND ====================
+//   const fetchStaff = async () => {
+//     try {
+//       setLoading(true);
+//       setError(null);
+//       console.log('📤 Fetching staff from:', `${API_URL}/api/staff`);
+      
+//       const response = await fetch(`${API_URL}/api/staff`);
+//       console.log('📥 Response status:', response.status);
+      
+//       const data = await response.json();
+//       console.log('📥 Received data:', data);
+
+//       if (data.success) {
+//         // Check if data.data is array
+//         if (Array.isArray(data.data)) {
+//           setStaff(data.data);
+//           console.log(`✅ ${data.data.length} staff members loaded`);
+//         } else {
+//           console.error('Data.data is not an array:', data.data);
+//           setStaff([]);
+//         }
+//       } else {
+//         console.error('Failed to fetch staff:', data.message);
+//         setError(data.message || 'Failed to fetch staff');
+//         // Don't use mock data, show empty state
+//         setStaff([]);
+//       }
+//     } catch (error) {
+//       console.error('❌ Error fetching staff:', error);
+//       setError(error.message);
+//       setStaff([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchStaff();
+//   }, []);
+
+//   // Get unique roles for filter
+//   const roles = ['all', ...new Set(staff.map(s => s.role).filter(Boolean))];
+
+//   // Handle form input change
+//   const handleInputChange = (e) => {
+//     setFormData({
+//       ...formData,
+//       [e.target.name]: e.target.value
+//     });
+//   };
+
+//   // Add new staff
+//   const handleAddStaff = async (e) => {
+//     e.preventDefault();
+
+//     try {
+//       const staffData = {
+//         ...formData,
+//         attendance: '100%',
+//         image: `https://ui-avatars.com/api/?name=${formData.name.replace(' ', '+')}&background=2196F3&color=fff&size=50`
+//       };
+
+//       console.log('📤 Adding staff:', staffData);
+
+//       const response = await fetch(`${API_URL}/api/staff`, {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify(staffData)
+//       });
+
+//       const data = await response.json();
+//       console.log('📥 Add response:', data);
+
+//       if (data.success) {
+//         alert('✅ Staff member added successfully!');
+//         fetchStaff(); // Refresh the list
+        
+//         // Notify dashboard to update
+//         if (window.EventBus) {
+//           window.EventBus.emit('staffDataChanged');
+//         }
+//       } else {
+//         alert(`❌ Error: ${data.message}`);
+//       }
+//     } catch (error) {
+//       console.error('Error adding staff:', error);
+//       alert('❌ Failed to add staff member');
+//     }
+
+//     setShowForm(false);
+//     setEditingStaff(null);
+//     resetForm();
+//   };
+
+//   // Edit staff
+//   const handleEdit = (member) => {
+//     setEditingStaff(member);
+//     setFormData({
+//       name: member.name || '',
+//       role: member.role || '',
+//       department: member.department || '',
+//       shift: member.shift || '',
+//       status: member.status || 'On Duty',
+//       contact: member.contact || '',
+//       email: member.email || '',
+//       salary: member.salary || '',
+//       joinDate: member.joinDate || ''
+//     });
+//     setShowForm(true);
+//   };
+
+//   // Update staff
+//   const handleUpdateStaff = async (e) => {
+//     e.preventDefault();
+
+//     try {
+//       const staffId = editingStaff._id || editingStaff.id;
+//       console.log('📤 Updating staff:', staffId, formData);
+
+//       const response = await fetch(`${API_URL}/api/staff/${staffId}`, {
+//         method: 'PUT',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify(formData)
+//       });
+
+//       const data = await response.json();
+//       console.log('📥 Update response:', data);
+
+//       if (data.success) {
+//         alert('✅ Staff member updated successfully!');
+//         fetchStaff(); // Refresh the list
+        
+//         // Notify dashboard
+//         if (window.EventBus) {
+//           window.EventBus.emit('staffDataChanged');
+//         }
+//       } else {
+//         alert(`❌ Error: ${data.message}`);
+//       }
+//     } catch (error) {
+//       console.error('Error updating staff:', error);
+//       alert('❌ Failed to update staff member');
+//     }
+
+//     setShowForm(false);
+//     setEditingStaff(null);
+//     resetForm();
+//   };
+
+//   // Delete staff
+//   const handleDelete = async (id) => {
+//     const memberToDelete = staff.find(s => (s._id === id || s.id === id));
+
+//     if (window.confirm(`Are you sure you want to delete ${memberToDelete?.name}?`)) {
+//       try {
+//         console.log('📤 Deleting staff:', id);
+
+//         const response = await fetch(`${API_URL}/api/staff/${id}`, {
+//           method: 'DELETE'
+//         });
+
+//         const data = await response.json();
+//         console.log('📥 Delete response:', data);
+
+//         if (data.success) {
+//           alert('✅ Staff member deleted successfully!');
+//           fetchStaff(); // Refresh the list
+          
+//           // Notify dashboard
+//           if (window.EventBus) {
+//             window.EventBus.emit('staffDataChanged');
+//           }
+//         } else {
+//           alert(`❌ Error: ${data.message}`);
+//         }
+//       } catch (error) {
+//         console.error('Error deleting staff:', error);
+//         alert('❌ Failed to delete staff member');
+//       }
+//     }
+//   };
+
+//   // View staff details
+//   const handleViewDetails = (member) => {
+//     setShowDetails(member);
+//   };
+
+//   // Toggle status
+//   const handleToggleStatus = async (id) => {
+//     const member = staff.find(s => s._id === id || s.id === id);
+//     const statusCycle = {
+//       'On Duty': 'Off Duty',
+//       'Off Duty': 'On Leave',
+//       'On Leave': 'On Duty'
+//     };
+//     const newStatus = statusCycle[member.status] || 'On Duty';
+
+//     try {
+//       console.log('📤 Toggling status:', id, newStatus);
+
+//       const response = await fetch(`${API_URL}/api/staff/${id}/status`, {
+//         method: 'PATCH',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({ status: newStatus })
+//       });
+
+//       const data = await response.json();
+//       console.log('📥 Status update response:', data);
+
+//       if (data.success) {
+//         fetchStaff(); // Refresh the list
+        
+//         // Notify dashboard
+//         if (window.EventBus) {
+//           window.EventBus.emit('staffDataChanged');
+//         }
+//       } else {
+//         alert(`❌ Error: ${data.message}`);
+//       }
+//     } catch (error) {
+//       console.error('Error updating status:', error);
+//     }
+//   };
+
+//   // Reset form
+//   const resetForm = () => {
+//     setFormData({
+//       name: '', role: '', department: '', shift: '',
+//       status: 'On Duty', contact: '', email: '', salary: '', joinDate: ''
+//     });
+//   };
+
+//   // Filter staff
+//   const filteredStaff = staff.filter(member => {
+//     const searchLower = searchTerm.toLowerCase();
+//     const matchesSearch = 
+//       (member.name?.toLowerCase() || '').includes(searchLower) ||
+//       (member.role?.toLowerCase() || '').includes(searchLower) ||
+//       (member.department?.toLowerCase() || '').includes(searchLower) ||
+//       (member.contact || '').includes(searchTerm) ||
+//       (member.email?.toLowerCase() || '').includes(searchLower);
+
+//     const matchesRole = filterRole === 'all' || member.role === filterRole;
+//     const matchesStatus = filterStatus === 'all' || member.status === filterStatus;
+
+//     return matchesSearch && matchesRole && matchesStatus;
+//   });
+
+//   // Statistics
+//   const stats = {
+//     total: staff.length,
+//     onDuty: staff.filter(s => s.status === 'On Duty').length,
+//     offDuty: staff.filter(s => s.status === 'Off Duty').length,
+//     onLeave: staff.filter(s => s.status === 'On Leave').length
+//   };
+
+//   // Loading state
+//   if (loading) {
+//     return (
+//       <div className="loading-container">
+//         <div className="loading-spinner"></div>
+//         <p>Loading staff data...</p>
+//       </div>
+//     );
+//   }
+
+//   // Error state
+//   if (error) {
+//     return (
+//       <div className="error-container">
+//         <div className="error-icon">❌</div>
+//         <h3>Error Loading Staff</h3>
+//         <p>{error}</p>
+//         <button className="btn btn-primary" onClick={fetchStaff}>
+//           Try Again
+//         </button>
+//         <button 
+//           className="btn" 
+//           onClick={() => window.open('http://localhost:8002/api/staff', '_blank')}
+//         >
+//           Check API Directly
+//         </button>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="staff-page">
+//       <div className="page-header">
+//         <h2>👥 Staff Management {staff.length > 0 && `(${staff.length})`}</h2>
+//         <button className="btn btn-primary" onClick={() => {
+//           setEditingStaff(null);
+//           resetForm();
+//           setShowForm(true);
+//         }}>
+//           + Add Staff Member
+//         </button>
+//       </div>
+
+//       {/* Statistics Cards */}
+//       <div className="staff-stats">
+//         <div className="stat-card total">
+//           <span className="stat-label">Total Staff</span>
+//           <span className="stat-value">{stats.total}</span>
+//         </div>
+//         <div className="stat-card on-duty">
+//           <span className="stat-label">On Duty</span>
+//           <span className="stat-value">{stats.onDuty}</span>
+//         </div>
+//         <div className="stat-card off-duty">
+//           <span className="stat-label">Off Duty</span>
+//           <span className="stat-value">{stats.offDuty}</span>
+//         </div>
+//         <div className="stat-card on-leave">
+//           <span className="stat-label">On Leave</span>
+//           <span className="stat-value">{stats.onLeave}</span>
+//         </div>
+//       </div>
+
+//       {/* Search and Filters */}
+//       <div className="filters-section">
+//         <div className="search-bar">
+//           <input
+//             type="text"
+//             placeholder="🔍 Search by name, role, department, or contact..."
+//             value={searchTerm}
+//             onChange={(e) => setSearchTerm(e.target.value)}
+//             className="search-input"
+//           />
+//         </div>
+
+//         <div className="filter-buttons">
+//           <select
+//             className="filter-select"
+//             value={filterRole}
+//             onChange={(e) => setFilterRole(e.target.value)}
+//           >
+//             <option value="all">All Roles</option>
+//             {roles.filter(r => r !== 'all').map(role => (
+//               <option key={role} value={role}>{role}</option>
+//             ))}
+//           </select>
+
+//           <select
+//             className="filter-select"
+//             value={filterStatus}
+//             onChange={(e) => setFilterStatus(e.target.value)}
+//           >
+//             <option value="all">All Status</option>
+//             <option value="On Duty">On Duty</option>
+//             <option value="Off Duty">Off Duty</option>
+//             <option value="On Leave">On Leave</option>
+//           </select>
+//         </div>
+//       </div>
+
+//       {/* Debug Info - Remove in production */}
+//       {staff.length === 0 && (
+//         <div className="debug-info" style={{ padding: '20px', background: '#f0f0f0', margin: '20px', borderRadius: '8px' }}>
+//           <h4>Debug Information:</h4>
+//           <p>API URL: {API_URL}/api/staff</p>
+//           <p>Staff Array Length: {staff.length}</p>
+//           <p>Check browser console for more details (F12)</p>
+//           <button 
+//             className="btn btn-primary" 
+//             onClick={() => window.open(`${API_URL}/api/staff`, '_blank')}
+//           >
+//             Test API in New Tab
+//           </button>
+//         </div>
+//       )}
+
+//       {/* Add/Edit Modal */}
+//       {showForm && (
+//         <div className="modal-overlay" onClick={() => setShowForm(false)}>
+//           <div className="modal" onClick={(e) => e.stopPropagation()}>
+//             <h3>{editingStaff ? '✏️ Edit Staff Member' : '➕ Add New Staff Member'}</h3>
+//             <form onSubmit={editingStaff ? handleUpdateStaff : handleAddStaff}>
+//               <div className="form-row">
+//                 <div className="form-group">
+//                   <label>Full Name *</label>
+//                   <input
+//                     type="text"
+//                     name="name"
+//                     value={formData.name}
+//                     onChange={handleInputChange}
+//                     placeholder="Enter full name"
+//                     required
+//                   />
+//                 </div>
+//                 <div className="form-group">
+//                   <label>Role *</label>
+//                   <select name="role" value={formData.role} onChange={handleInputChange} required>
+//                     <option value="">Select Role</option>
+//                     <option value="Doctor">Doctor</option>
+//                     <option value="Nurse">Nurse</option>
+//                     <option value="Receptionist">Receptionist</option>
+//                     <option value="Lab Technician">Lab Technician</option>
+//                     <option value="Pharmacist">Pharmacist</option>
+//                     <option value="Accountant">Accountant</option>
+//                     <option value="Cleaner">Cleaner</option>
+//                     <option value="Security">Security</option>
+//                   </select>
+//                 </div>
+//               </div>
+
+//               <div className="form-row">
+//                 <div className="form-group">
+//                   <label>Department</label>
+//                   <input
+//                     type="text"
+//                     name="department"
+//                     value={formData.department}
+//                     onChange={handleInputChange}
+//                     placeholder="e.g., Nursing, Front Office"
+//                   />
+//                 </div>
+//                 <div className="form-group">
+//                   <label>Shift *</label>
+//                   <select name="shift" value={formData.shift} onChange={handleInputChange} required>
+//                     <option value="">Select Shift</option>
+//                     <option value="Morning (8am-4pm)">Morning (8am-4pm)</option>
+//                     <option value="Evening (4pm-12am)">Evening (4pm-12am)</option>
+//                     <option value="Night (12am-8am)">Night (12am-8am)</option>
+//                     <option value="General (10am-6pm)">General (10am-6pm)</option>
+//                   </select>
+//                 </div>
+//               </div>
+
+//               <div className="form-row">
+//                 <div className="form-group">
+//                   <label>Contact Number *</label>
+//                   <input
+//                     type="text"
+//                     name="contact"
+//                     value={formData.contact}
+//                     onChange={handleInputChange}
+//                     placeholder="+91 98765 43210"
+//                     required
+//                   />
+//                 </div>
+//                 <div className="form-group">
+//                   <label>Email</label>
+//                   <input
+//                     type="email"
+//                     name="email"
+//                     value={formData.email}
+//                     onChange={handleInputChange}
+//                     placeholder="email@example.com"
+//                   />
+//                 </div>
+//               </div>
+
+//               <div className="form-row">
+//                 <div className="form-group">
+//                   <label>Join Date</label>
+//                   <input
+//                     type="date"
+//                     name="joinDate"
+//                     value={formData.joinDate}
+//                     onChange={handleInputChange}
+//                   />
+//                 </div>
+//                 <div className="form-group">
+//                   <label>Salary (₹)</label>
+//                   <input
+//                     type="text"
+//                     name="salary"
+//                     value={formData.salary}
+//                     onChange={handleInputChange}
+//                     placeholder="e.g., ₹25,000"
+//                   />
+//                 </div>
+//               </div>
+
+//               <div className="form-group">
+//                 <label>Status</label>
+//                 <select name="status" value={formData.status} onChange={handleInputChange}>
+//                   <option value="On Duty">On Duty</option>
+//                   <option value="Off Duty">Off Duty</option>
+//                   <option value="On Leave">On Leave</option>
+//                 </select>
+//               </div>
+
+//               <div className="modal-actions">
+//                 <button type="submit" className="btn btn-primary">
+//                   {editingStaff ? 'Update Staff' : 'Add Staff'}
+//                 </button>
+//                 <button type="button" className="btn" onClick={() => {
+//                   setShowForm(false);
+//                   setEditingStaff(null);
+//                   resetForm();
+//                 }}>Cancel</button>
+//               </div>
+//             </form>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* Staff Details Modal */}
+//       {showDetails && (
+//         <div className="modal-overlay" onClick={() => setShowDetails(null)}>
+//           <div className="modal" onClick={(e) => e.stopPropagation()}>
+//             <h3>👤 Staff Details</h3>
+//             <div className="staff-details">
+//               <div className="detail-avatar">
+//                 <img 
+//                   src={showDetails.image || `https://ui-avatars.com/api/?name=${showDetails.name?.replace(' ', '+')}&background=2196F3&color=fff&size=100`} 
+//                   alt={showDetails.name} 
+//                 />
+//               </div>
+//               <div className="detail-info">
+//                 <div className="detail-row">
+//                   <strong>Name:</strong> {showDetails.name}
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Role:</strong> {showDetails.role}
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Department:</strong> {showDetails.department || 'N/A'}
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Shift:</strong> {showDetails.shift}
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Status:</strong>
+//                   <span className={`status-badge status-${showDetails.status?.toLowerCase().replace(' ', '-')}`}>
+//                     {showDetails.status}
+//                   </span>
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Attendance:</strong> {showDetails.attendance || 'N/A'}
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Contact:</strong> {showDetails.contact}
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Email:</strong> {showDetails.email || 'N/A'}
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Join Date:</strong> {showDetails.joinDate || 'N/A'}
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Salary:</strong> {showDetails.salary || 'N/A'}
+//                 </div>
+//               </div>
+//             </div>
+//             <div className="modal-actions">
+//               <button className="btn" onClick={() => setShowDetails(null)}>Close</button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* Staff Table */}
+//       <div className="table-container">
+//         {filteredStaff.length > 0 ? (
+//           <table>
+//             <thead>
+//               <tr>
+//                 <th>Staff Member</th>
+//                 <th>Role</th>
+//                 <th>Department</th>
+//                 <th>Shift</th>
+//                 <th>Status</th>
+//                 <th>Attendance</th>
+//                 <th>Contact</th>
+//                 <th>Actions</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               {filteredStaff.map(member => (
+//                 <tr key={member._id || member.id}>
+//                   <td>
+//                     <div className="staff-info">
+//                       <img 
+//                         src={member.image || `https://ui-avatars.com/api/?name=${member.name?.replace(' ', '+')}&background=2196F3&color=fff&size=50`} 
+//                         alt={member.name} 
+//                         className="staff-image" 
+//                       />
+//                       <div className="staff-name">
+//                         <span>{member.name}</span>
+//                         <small>{member.email}</small>
+//                       </div>
+//                     </div>
+//                   </td>
+//                   <td>
+//                     <span className={`role-badge role-${member.role?.toLowerCase().replace(' ', '-')}`}>
+//                       {member.role}
+//                     </span>
+//                   </td>
+//                   <td>{member.department || '-'}</td>
+//                   <td>{member.shift}</td>
+//                   <td>
+//                     <span className={`status-badge status-${member.status?.toLowerCase().replace(' ', '-')}`}>
+//                       {member.status}
+//                     </span>
+//                   </td>
+//                   <td>
+//                     <div className="attendance-cell">
+//                       <span className="attendance-value">{member.attendance || '100%'}</span>
+//                       <div className="attendance-bar">
+//                         <div
+//                           className="attendance-progress"
+//                           style={{ width: member.attendance || '100%' }}
+//                         ></div>
+//                       </div>
+//                     </div>
+//                   </td>
+//                   <td>{member.contact}</td>
+//                   <td>
+//                     <div className="action-buttons">
+//                       <button
+//                         className="btn-icon view"
+//                         onClick={() => handleViewDetails(member)}
+//                         title="View Details"
+//                       >
+//                         👁️
+//                       </button>
+//                       <button
+//                         className="btn-icon edit"
+//                         onClick={() => handleEdit(member)}
+//                         title="Edit"
+//                       >
+//                         ✏️
+//                       </button>
+//                       <button
+//                         className="btn-icon toggle"
+//                         onClick={() => handleToggleStatus(member._id || member.id)}
+//                         title="Toggle Status"
+//                       >
+//                         🔄
+//                       </button>
+//                       <button
+//                         className="btn-icon delete"
+//                         onClick={() => handleDelete(member._id || member.id)}
+//                         title="Delete"
+//                       >
+//                         🗑️
+//                       </button>
+//                     </div>
+//                   </td>
+//                 </tr>
+//               ))}
+//             </tbody>
+//           </table>
+//         ) : (
+//           <div className="no-results">
+//             <p>🔍 No staff members found matching your criteria.</p>
+//             <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+//               + Add First Staff Member
+//             </button>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Staff;
+
+// import React, { useState, useEffect } from 'react';
+// import './Staff.css';
+
+// // ✅ Use the same port as your backend (check which one is working)
+// // Try both ports to see which one works
+// const API_URL = 'http://localhost:8005';
+
+// const Staff = () => {
+//   const [staff, setStaff] = useState([]);
+//   const [showForm, setShowForm] = useState(false);
+//   const [showDetails, setShowDetails] = useState(null);
+//   const [editingStaff, setEditingStaff] = useState(null);
+//   const [searchTerm, setSearchTerm] = useState('');
+//   const [filterRole, setFilterRole] = useState('all');
+//   const [filterStatus, setFilterStatus] = useState('all');
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+//   const [formData, setFormData] = useState({
+//     name: '',
+//     role: '',
+//     department: '',
+//     shift: '',
+//     status: 'On Duty',
+//     contact: '',
+//     email: '',
+//     salary: '',
+//     joinDate: ''
+//   });
+
+//   // ==================== FETCH STAFF FROM BACKEND ====================
+//   const fetchStaff = async () => {
+//     try {
+//       setLoading(true);
+//       setError(null);
+//       console.log('📤 Fetching staff from:', `${API_URL}/api/staff`);
+      
+//       const response = await fetch(`${API_URL}/api/staff`);
+//       console.log('📥 Response status:', response.status);
+      
+//       const data = await response.json();
+//       console.log('📥 Received data:', data);
+
+//       if (data.success) {
+//         // Check if data.data is array
+//         if (Array.isArray(data.data)) {
+//           setStaff(data.data);
+//           console.log(`✅ ${data.data.length} staff members loaded`);
+//         } else {
+//           console.error('Data.data is not an array:', data.data);
+//           setStaff([]);
+//         }
+//       } else {
+//         console.error('Failed to fetch staff:', data.message);
+//         setError(data.message || 'Failed to fetch staff');
+//         // Don't use mock data, show empty state
+//         setStaff([]);
+//       }
+//     } catch (error) {
+//       console.error('❌ Error fetching staff:', error);
+//       setError(error.message);
+//       setStaff([]);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchStaff();
+//   }, []);
+
+//   // Get unique roles for filter
+//   const roles = ['all', ...new Set(staff.map(s => s.role).filter(Boolean))];
+
+//   // Handle form input change
+//   const handleInputChange = (e) => {
+//     setFormData({
+//       ...formData,
+//       [e.target.name]: e.target.value
+//     });
+//   };
+
+//   // Add new staff
+//   const handleAddStaff = async (e) => {
+//     e.preventDefault();
+
+//     try {
+//       const staffData = {
+//         ...formData,
+//         // attendance hata diya
+//         image: `https://ui-avatars.com/api/?name=${formData.name.replace(' ', '+')}&background=2196F3&color=fff&size=50`
+//       };
+
+//       console.log('📤 Adding staff:', staffData);
+
+//       const response = await fetch(`${API_URL}/api/staff`, {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify(staffData)
+//       });
+
+//       const data = await response.json();
+//       console.log('📥 Add response:', data);
+
+//       if (data.success) {
+//         alert('✅ Staff member added successfully!');
+//         fetchStaff(); // Refresh the list
+        
+//         // Notify dashboard to update
+//         if (window.EventBus) {
+//           window.EventBus.emit('staffDataChanged');
+//         }
+//       } else {
+//         alert(`❌ Error: ${data.message}`);
+//       }
+//     } catch (error) {
+//       console.error('Error adding staff:', error);
+//       alert('❌ Failed to add staff member');
+//     }
+
+//     setShowForm(false);
+//     setEditingStaff(null);
+//     resetForm();
+//   };
+
+//   // Edit staff
+//   const handleEdit = (member) => {
+//     setEditingStaff(member);
+//     setFormData({
+//       name: member.name || '',
+//       role: member.role || '',
+//       department: member.department || '',
+//       shift: member.shift || '',
+//       status: member.status || 'On Duty',
+//       contact: member.contact || '',
+//       email: member.email || '',
+//       salary: member.salary || '',
+//       joinDate: member.joinDate || ''
+//     });
+//     setShowForm(true);
+//   };
+
+//   // Update staff
+//   const handleUpdateStaff = async (e) => {
+//     e.preventDefault();
+
+//     try {
+//       const staffId = editingStaff._id || editingStaff.id;
+//       console.log('📤 Updating staff:', staffId, formData);
+
+//       const response = await fetch(`${API_URL}/api/staff/${staffId}`, {
+//         method: 'PUT',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify(formData)
+//       });
+
+//       const data = await response.json();
+//       console.log('📥 Update response:', data);
+
+//       if (data.success) {
+//         alert('✅ Staff member updated successfully!');
+//         fetchStaff(); // Refresh the list
+        
+//         // Notify dashboard
+//         if (window.EventBus) {
+//           window.EventBus.emit('staffDataChanged');
+//         }
+//       } else {
+//         alert(`❌ Error: ${data.message}`);
+//       }
+//     } catch (error) {
+//       console.error('Error updating staff:', error);
+//       alert('❌ Failed to update staff member');
+//     }
+
+//     setShowForm(false);
+//     setEditingStaff(null);
+//     resetForm();
+//   };
+
+//   // Delete staff
+//   const handleDelete = async (id) => {
+//     const memberToDelete = staff.find(s => (s._id === id || s.id === id));
+
+//     if (window.confirm(`Are you sure you want to delete ${memberToDelete?.name}?`)) {
+//       try {
+//         console.log('📤 Deleting staff:', id);
+
+//         const response = await fetch(`${API_URL}/api/staff/${id}`, {
+//           method: 'DELETE'
+//         });
+
+//         const data = await response.json();
+//         console.log('📥 Delete response:', data);
+
+//         if (data.success) {
+//           alert('✅ Staff member deleted successfully!');
+//           fetchStaff(); // Refresh the list
+          
+//           // Notify dashboard
+//           if (window.EventBus) {
+//             window.EventBus.emit('staffDataChanged');
+//           }
+//         } else {
+//           alert(`❌ Error: ${data.message}`);
+//         }
+//       } catch (error) {
+//         console.error('Error deleting staff:', error);
+//         alert('❌ Failed to delete staff member');
+//       }
+//     }
+//   };
+
+//   // View staff details
+//   const handleViewDetails = (member) => {
+//     setShowDetails(member);
+//   };
+
+//   // Toggle status
+//   const handleToggleStatus = async (id) => {
+//     const member = staff.find(s => s._id === id || s.id === id);
+//     const statusCycle = {
+//       'On Duty': 'Off Duty',
+//       'Off Duty': 'On Leave',
+//       'On Leave': 'On Duty'
+//     };
+//     const newStatus = statusCycle[member.status] || 'On Duty';
+
+//     try {
+//       console.log('📤 Toggling status:', id, newStatus);
+
+//       const response = await fetch(`${API_URL}/api/staff/${id}/status`, {
+//         method: 'PATCH',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({ status: newStatus })
+//       });
+
+//       const data = await response.json();
+//       console.log('📥 Status update response:', data);
+
+//       if (data.success) {
+//         fetchStaff(); // Refresh the list
+        
+//         // Notify dashboard
+//         if (window.EventBus) {
+//           window.EventBus.emit('staffDataChanged');
+//         }
+//       } else {
+//         alert(`❌ Error: ${data.message}`);
+//       }
+//     } catch (error) {
+//       console.error('Error updating status:', error);
+//     }
+//   };
+
+//   // Reset form
+//   const resetForm = () => {
+//     setFormData({
+//       name: '', role: '', department: '', shift: '',
+//       status: 'On Duty', contact: '', email: '', salary: '', joinDate: ''
+//     });
+//   };
+
+//   // Filter staff
+//   const filteredStaff = staff.filter(member => {
+//     const searchLower = searchTerm.toLowerCase();
+//     const matchesSearch = 
+//       (member.name?.toLowerCase() || '').includes(searchLower) ||
+//       (member.role?.toLowerCase() || '').includes(searchLower) ||
+//       (member.department?.toLowerCase() || '').includes(searchLower) ||
+//       (member.contact || '').includes(searchTerm) ||
+//       (member.email?.toLowerCase() || '').includes(searchLower);
+
+//     const matchesRole = filterRole === 'all' || member.role === filterRole;
+//     const matchesStatus = filterStatus === 'all' || member.status === filterStatus;
+
+//     return matchesSearch && matchesRole && matchesStatus;
+//   });
+
+//   // Statistics
+//   const stats = {
+//     total: staff.length,
+//     onDuty: staff.filter(s => s.status === 'On Duty').length,
+//     offDuty: staff.filter(s => s.status === 'Off Duty').length,
+//     onLeave: staff.filter(s => s.status === 'On Leave').length
+//   };
+
+//   // Loading state
+//   if (loading) {
+//     return (
+//       <div className="loading-container">
+//         <div className="loading-spinner"></div>
+//         <p>Loading staff data...</p>
+//       </div>
+//     );
+//   }
+
+//   // Error state
+//   if (error) {
+//     return (
+//       <div className="error-container">
+//         <div className="error-icon">❌</div>
+//         <h3>Error Loading Staff</h3>
+//         <p>{error}</p>
+//         <button className="btn btn-primary" onClick={fetchStaff}>
+//           Try Again
+//         </button>
+//         <button 
+//           className="btn" 
+//           onClick={() => window.open('http://localhost:8005/api/staff', '_blank')}
+//         >
+//           Check API Directly
+//         </button>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="staff-page">
+//       <div className="page-header">
+//         <h2>👥 Staff Management {staff.length > 0 && `(${staff.length})`}</h2>
+//         <button className="btn btn-primary" onClick={() => {
+//           setEditingStaff(null);
+//           resetForm();
+//           setShowForm(true);
+//         }}>
+//           + Add Staff Member
+//         </button>
+//       </div>
+
+//       {/* Statistics Cards */}
+//       <div className="staff-stats">
+//         <div className="stat-card total">
+//           <span className="stat-label">Total Staff</span>
+//           <span className="stat-value">{stats.total}</span>
+//         </div>
+//         <div className="stat-card on-duty">
+//           <span className="stat-label">On Duty</span>
+//           <span className="stat-value">{stats.onDuty}</span>
+//         </div>
+//         <div className="stat-card off-duty">
+//           <span className="stat-label">Off Duty</span>
+//           <span className="stat-value">{stats.offDuty}</span>
+//         </div>
+//         <div className="stat-card on-leave">
+//           <span className="stat-label">On Leave</span>
+//           <span className="stat-value">{stats.onLeave}</span>
+//         </div>
+//       </div>
+
+//       {/* Search and Filters */}
+//       <div className="filters-section">
+//         <div className="search-bar">
+//           <input
+//             type="text"
+//             placeholder="🔍 Search by name, role, department, or contact..."
+//             value={searchTerm}
+//             onChange={(e) => setSearchTerm(e.target.value)}
+//             className="search-input"
+//           />
+//         </div>
+
+//         <div className="filter-buttons">
+//           <select
+//             className="filter-select"
+//             value={filterRole}
+//             onChange={(e) => setFilterRole(e.target.value)}
+//           >
+//             <option value="all">All Roles</option>
+//             {roles.filter(r => r !== 'all').map(role => (
+//               <option key={role} value={role}>{role}</option>
+//             ))}
+//           </select>
+
+//           <select
+//             className="filter-select"
+//             value={filterStatus}
+//             onChange={(e) => setFilterStatus(e.target.value)}
+//           >
+//             <option value="all">All Status</option>
+//             <option value="On Duty">On Duty</option>
+//             <option value="Off Duty">Off Duty</option>
+//             <option value="On Leave">On Leave</option>
+//           </select>
+//         </div>
+//       </div>
+
+//       {/* Debug Info - Remove in production */}
+//       {staff.length === 0 && (
+//         <div className="debug-info" style={{ padding: '20px', background: '#f0f0f0', margin: '20px', borderRadius: '8px' }}>
+//           <h4>Debug Information:</h4>
+//           <p>API URL: {API_URL}/api/staff</p>
+//           <p>Staff Array Length: {staff.length}</p>
+//           <p>Check browser console for more details (F12)</p>
+//           <button 
+//             className="btn btn-primary" 
+//             onClick={() => window.open(`${API_URL}/api/staff`, '_blank')}
+//           >
+//             Test API in New Tab
+//           </button>
+//         </div>
+//       )}
+
+//       {/* Add/Edit Modal */}
+//       {showForm && (
+//         <div className="modal-overlay" onClick={() => setShowForm(false)}>
+//           <div className="modal" onClick={(e) => e.stopPropagation()}>
+//             <h3>{editingStaff ? '✏️ Edit Staff Member' : '➕ Add New Staff Member'}</h3>
+//             <form onSubmit={editingStaff ? handleUpdateStaff : handleAddStaff}>
+//               <div className="form-row">
+//                 <div className="form-group">
+//                   <label>Full Name *</label>
+//                   <input
+//                     type="text"
+//                     name="name"
+//                     value={formData.name}
+//                     onChange={handleInputChange}
+//                     placeholder="Enter full name"
+//                     required
+//                   />
+//                 </div>
+//                 <div className="form-group">
+//                   <label>Role *</label>
+//                   <select name="role" value={formData.role} onChange={handleInputChange} required>
+//                     <option value="">Select Role</option>
+//                     <option value="Doctor">Doctor</option>
+//                     <option value="Nurse">Nurse</option>
+//                     <option value="Receptionist">Receptionist</option>
+//                     <option value="Lab Technician">Lab Technician</option>
+//                     <option value="Pharmacist">Pharmacist</option>
+//                     <option value="Accountant">Accountant</option>
+//                     <option value="Cleaner">Cleaner</option>
+//                     <option value="Security">Security</option>
+//                   </select>
+//                 </div>
+//               </div>
+
+//               <div className="form-row">
+//                 <div className="form-group">
+//                   <label>Department</label>
+//                   <input
+//                     type="text"
+//                     name="department"
+//                     value={formData.department}
+//                     onChange={handleInputChange}
+//                     placeholder="e.g., Nursing, Front Office"
+//                   />
+//                 </div>
+//                 <div className="form-group">
+//                   <label>Shift *</label>
+//                   <select name="shift" value={formData.shift} onChange={handleInputChange} required>
+//                     <option value="">Select Shift</option>
+//                     <option value="Morning (8am-4pm)">Morning (8am-4pm)</option>
+//                     <option value="Evening (4pm-12am)">Evening (4pm-12am)</option>
+//                     <option value="Night (12am-8am)">Night (12am-8am)</option>
+//                     <option value="General (10am-6pm)">General (10am-6pm)</option>
+//                   </select>
+//                 </div>
+//               </div>
+
+//               <div className="form-row">
+//                 <div className="form-group">
+//                   <label>Contact Number *</label>
+//                   <input
+//                     type="text"
+//                     name="contact"
+//                     value={formData.contact}
+//                     onChange={handleInputChange}
+//                     placeholder="+91 98765 43210"
+//                     required
+//                   />
+//                 </div>
+//                 <div className="form-group">
+//                   <label>Email</label>
+//                   <input
+//                     type="email"
+//                     name="email"
+//                     value={formData.email}
+//                     onChange={handleInputChange}
+//                     placeholder="email@example.com"
+//                   />
+//                 </div>
+//               </div>
+
+//               <div className="form-row">
+//                 <div className="form-group">
+//                   <label>Join Date</label>
+//                   <input
+//                     type="date"
+//                     name="joinDate"
+//                     value={formData.joinDate}
+//                     onChange={handleInputChange}
+//                   />
+//                 </div>
+//                 <div className="form-group">
+//                   <label>Salary (₹)</label>
+//                   <input
+//                     type="text"
+//                     name="salary"
+//                     value={formData.salary}
+//                     onChange={handleInputChange}
+//                     placeholder="e.g., ₹25,000"
+//                   />
+//                 </div>
+//               </div>
+
+//               <div className="form-group">
+//                 <label>Status</label>
+//                 <select name="status" value={formData.status} onChange={handleInputChange}>
+//                   <option value="On Duty">On Duty</option>
+//                   <option value="Off Duty">Off Duty</option>
+//                   <option value="On Leave">On Leave</option>
+//                 </select>
+//               </div>
+
+//               <div className="modal-actions">
+//                 <button type="submit" className="btn btn-primary">
+//                   {editingStaff ? 'Update Staff' : 'Add Staff'}
+//                 </button>
+//                 <button type="button" className="btn" onClick={() => {
+//                   setShowForm(false);
+//                   setEditingStaff(null);
+//                   resetForm();
+//                 }}>Cancel</button>
+//               </div>
+//             </form>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* Staff Details Modal */}
+//       {showDetails && (
+//         <div className="modal-overlay" onClick={() => setShowDetails(null)}>
+//           <div className="modal" onClick={(e) => e.stopPropagation()}>
+//             <h3>👤 Staff Details</h3>
+//             <div className="staff-details">
+//               <div className="detail-avatar">
+//                 <img 
+//                   src={showDetails.image || `https://ui-avatars.com/api/?name=${showDetails.name?.replace(' ', '+')}&background=2196F3&color=fff&size=100`} 
+//                   alt={showDetails.name} 
+//                 />
+//               </div>
+//               <div className="detail-info">
+//                 <div className="detail-row">
+//                   <strong>Name:</strong> {showDetails.name}
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Role:</strong> {showDetails.role}
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Department:</strong> {showDetails.department || 'N/A'}
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Shift:</strong> {showDetails.shift}
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Status:</strong>
+//                   <span className={`status-badge status-${showDetails.status?.toLowerCase().replace(' ', '-')}`}>
+//                     {showDetails.status}
+//                   </span>
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Contact:</strong> {showDetails.contact}
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Email:</strong> {showDetails.email || 'N/A'}
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Join Date:</strong> {showDetails.joinDate || 'N/A'}
+//                 </div>
+//                 <div className="detail-row">
+//                   <strong>Salary:</strong> {showDetails.salary || 'N/A'}
+//                 </div>
+//               </div>
+//             </div>
+//             <div className="modal-actions">
+//               <button className="btn" onClick={() => setShowDetails(null)}>Close</button>
+//             </div>
+//           </div>
+//         </div>
+//       )}
+
+//       {/* Staff Table - Attendance column removed */}
+//       <div className="table-container">
+//         {filteredStaff.length > 0 ? (
+//           <table>
+//             <thead>
+//               <tr>
+//                 <th>Staff Member</th>
+//                 <th>Role</th>
+//                 <th>Department</th>
+//                 <th>Shift</th>
+//                 <th>Status</th>
+//                 <th>Contact</th>
+//                 <th>Actions</th>
+//               </tr>
+//             </thead>
+//             <tbody>
+//               {filteredStaff.map(member => (
+//                 <tr key={member._id || member.id}>
+//                   <td>
+//                     <div className="staff-info">
+//                       <img 
+//                         src={member.image || `https://ui-avatars.com/api/?name=${member.name?.replace(' ', '+')}&background=2196F3&color=fff&size=50`} 
+//                         alt={member.name} 
+//                         className="staff-image" 
+//                       />
+//                       <div className="staff-name">
+//                         <span>{member.name}</span>
+//                         <small>{member.email}</small>
+//                       </div>
+//                     </div>
+//                   </td>
+//                   <td>
+//                     <span className={`role-badge role-${member.role?.toLowerCase().replace(' ', '-')}`}>
+//                       {member.role}
+//                     </span>
+//                   </td>
+//                   <td>{member.department || '-'}</td>
+//                   <td>{member.shift}</td>
+//                   <td>
+//                     <span className={`status-badge status-${member.status?.toLowerCase().replace(' ', '-')}`}>
+//                       {member.status}
+//                     </span>
+//                   </td>
+//                   <td>{member.contact}</td>
+//                   <td>
+//                     <div className="action-buttons">
+//                       <button
+//                         className="btn-icon view"
+//                         onClick={() => handleViewDetails(member)}
+//                         title="View Details"
+//                       >
+//                         👁️
+//                       </button>
+//                       <button
+//                         className="btn-icon edit"
+//                         onClick={() => handleEdit(member)}
+//                         title="Edit"
+//                       >
+//                         ✏️
+//                       </button>
+//                       <button
+//                         className="btn-icon toggle"
+//                         onClick={() => handleToggleStatus(member._id || member.id)}
+//                         title="Toggle Status"
+//                       >
+//                         🔄
+//                       </button>
+//                       <button
+//                         className="btn-icon delete"
+//                         onClick={() => handleDelete(member._id || member.id)}
+//                         title="Delete"
+//                       >
+//                         🗑️
+//                       </button>
+//                     </div>
+//                   </td>
+//                 </tr>
+//               ))}
+//             </tbody>
+//           </table>
+//         ) : (
+//           <div className="no-results">
+//             <p>🔍 No staff members found matching your criteria.</p>
+//             <button className="btn btn-primary" onClick={() => setShowForm(true)}>
+//               + Add First Staff Member
+//             </button>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Staff;
+
 import React, { useState, useEffect } from 'react';
 import './Staff.css';
 
-// ✅ Use the same port as your backend (check which one is working)
-// Try both ports to see which one works
+// ✅ Use the same port as your backend
 const API_URL = 'http://localhost:8005';
 
 const Staff = () => {
@@ -1152,6 +2518,7 @@ const Staff = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
   const [formData, setFormData] = useState({
     name: '',
     role: '',
@@ -1163,6 +2530,163 @@ const Staff = () => {
     salary: '',
     joinDate: ''
   });
+
+  // ==================== VALIDATION FUNCTIONS ====================
+  const validateContact = (contact) => {
+    if (!contact || contact.trim() === '') {
+      return 'Contact number is required';
+    }
+    
+    // Remove any non-digit characters
+    const cleaned = contact.replace(/\D/g, '');
+    
+    // Check if it contains only digits
+    if (cleaned.length !== contact.length) {
+      return 'Contact number must contain only digits';
+    }
+    
+    // Check length
+    if (cleaned.length !== 10) {
+      return 'Contact number must be exactly 10 digits';
+    }
+    
+    // Check if starts with 6,7,8,9 (Indian mobile numbers)
+    if (!['7', '8', '9'].includes(cleaned[0])) {
+      return 'Contact number must start with 7, 8, or 9';
+    }
+    
+    return '';
+  };
+
+  const validateSalary = (salary) => {
+    if (!salary || salary.trim() === '') {
+      return ''; // Salary is optional
+    }
+    
+    // Remove commas and spaces
+    const cleaned = salary.replace(/[,\s]/g, '');
+    
+    // Check if it's a valid number
+    if (!/^\d+$/.test(cleaned)) {
+      return 'Salary must contain only numbers';
+    }
+    
+    const salaryNum = parseInt(cleaned);
+    
+    // Check minimum salary
+    if (salaryNum < 5000) {
+      return 'Salary must be at least ₹5,000';
+    }
+    
+    // Check maximum (optional, but reasonable)
+    if (salaryNum > 1000000) {
+      return 'Salary cannot exceed ₹10,00,000';
+    }
+    
+    return '';
+  };
+
+  const validateName = (name) => {
+    if (!name || name.trim() === '') {
+      return 'Name is required';
+    }
+    
+    // Allow letters, spaces, dots, hyphens
+    if (!/^[a-zA-Z\s\.\-']+$/.test(name)) {
+      return 'Name can only contain letters, spaces, dots, and hyphens';
+    }
+    
+    if (name.length < 2) {
+      return 'Name must be at least 2 characters';
+    }
+    
+    if (name.length > 50) {
+      return 'Name cannot exceed 50 characters';
+    }
+    
+    return '';
+  };
+
+  const validateEmail = (email) => {
+    if (!email || email.trim() === '') {
+      return ''; // Email is optional
+    }
+    
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return 'Please enter a valid email address';
+    }
+    
+    return '';
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    
+    // Name validation
+    const nameError = validateName(formData.name);
+    if (nameError) errors.name = nameError;
+    
+    // Role validation
+    if (!formData.role) {
+      errors.role = 'Please select a role';
+    }
+    
+    // Shift validation
+    if (!formData.shift) {
+      errors.shift = 'Please select a shift';
+    }
+    
+    // Contact validation
+    const contactError = validateContact(formData.contact);
+    if (contactError) errors.contact = contactError;
+    
+    // Email validation (optional)
+    const emailError = validateEmail(formData.email);
+    if (emailError) errors.email = emailError;
+    
+    // Salary validation (optional)
+    const salaryError = validateSalary(formData.salary);
+    if (salaryError) errors.salary = salaryError;
+    
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Format salary for display
+  const formatSalary = (salary) => {
+    if (!salary) return '';
+    const num = parseInt(salary.replace(/[,\s]/g, ''));
+    if (isNaN(num)) return salary;
+    return `₹${num.toLocaleString('en-IN')}`;
+  };
+
+  // Handle input change with real-time validation
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    // Special handling for contact - only digits
+    if (name === 'contact') {
+      const digits = value.replace(/\D/g, '');
+      if (digits.length <= 10) {
+        setFormData({ ...formData, [name]: digits });
+      }
+    } 
+    // Special handling for salary - only digits
+    else if (name === 'salary') {
+      const digits = value.replace(/[^\d]/g, '');
+      setFormData({ ...formData, [name]: digits });
+    }
+    else {
+      setFormData({ ...formData, [name]: value });
+    }
+    
+    // Clear error for this field
+    if (formErrors[name]) {
+      setFormErrors({ ...formErrors, [name]: '' });
+    }
+  };
 
   // ==================== FETCH STAFF FROM BACKEND ====================
   const fetchStaff = async () => {
@@ -1178,7 +2702,6 @@ const Staff = () => {
       console.log('📥 Received data:', data);
 
       if (data.success) {
-        // Check if data.data is array
         if (Array.isArray(data.data)) {
           setStaff(data.data);
           console.log(`✅ ${data.data.length} staff members loaded`);
@@ -1189,7 +2712,6 @@ const Staff = () => {
       } else {
         console.error('Failed to fetch staff:', data.message);
         setError(data.message || 'Failed to fetch staff');
-        // Don't use mock data, show empty state
         setStaff([]);
       }
     } catch (error) {
@@ -1208,22 +2730,20 @@ const Staff = () => {
   // Get unique roles for filter
   const roles = ['all', ...new Set(staff.map(s => s.role).filter(Boolean))];
 
-  // Handle form input change
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
   // Add new staff
   const handleAddStaff = async (e) => {
     e.preventDefault();
+    
+    // Validate form
+    if (!validateForm()) {
+      alert('❌ Please fix the errors in the form');
+      return;
+    }
 
     try {
       const staffData = {
         ...formData,
-        attendance: '100%',
+        salary: formData.salary ? parseInt(formData.salary) : null,
         image: `https://ui-avatars.com/api/?name=${formData.name.replace(' ', '+')}&background=2196F3&color=fff&size=50`
       };
 
@@ -1240,12 +2760,13 @@ const Staff = () => {
 
       if (data.success) {
         alert('✅ Staff member added successfully!');
-        fetchStaff(); // Refresh the list
+        fetchStaff();
         
-        // Notify dashboard to update
         if (window.EventBus) {
           window.EventBus.emit('staffDataChanged');
         }
+        setShowForm(false);
+        resetForm();
       } else {
         alert(`❌ Error: ${data.message}`);
       }
@@ -1253,10 +2774,6 @@ const Staff = () => {
       console.error('Error adding staff:', error);
       alert('❌ Failed to add staff member');
     }
-
-    setShowForm(false);
-    setEditingStaff(null);
-    resetForm();
   };
 
   // Edit staff
@@ -1270,15 +2787,22 @@ const Staff = () => {
       status: member.status || 'On Duty',
       contact: member.contact || '',
       email: member.email || '',
-      salary: member.salary || '',
+      salary: member.salary ? member.salary.toString() : '',
       joinDate: member.joinDate || ''
     });
+    setFormErrors({});
     setShowForm(true);
   };
 
   // Update staff
   const handleUpdateStaff = async (e) => {
     e.preventDefault();
+    
+    // Validate form
+    if (!validateForm()) {
+      alert('❌ Please fix the errors in the form');
+      return;
+    }
 
     try {
       const staffId = editingStaff._id || editingStaff.id;
@@ -1295,12 +2819,14 @@ const Staff = () => {
 
       if (data.success) {
         alert('✅ Staff member updated successfully!');
-        fetchStaff(); // Refresh the list
+        fetchStaff();
         
-        // Notify dashboard
         if (window.EventBus) {
           window.EventBus.emit('staffDataChanged');
         }
+        setShowForm(false);
+        setEditingStaff(null);
+        resetForm();
       } else {
         alert(`❌ Error: ${data.message}`);
       }
@@ -1308,10 +2834,6 @@ const Staff = () => {
       console.error('Error updating staff:', error);
       alert('❌ Failed to update staff member');
     }
-
-    setShowForm(false);
-    setEditingStaff(null);
-    resetForm();
   };
 
   // Delete staff
@@ -1331,9 +2853,8 @@ const Staff = () => {
 
         if (data.success) {
           alert('✅ Staff member deleted successfully!');
-          fetchStaff(); // Refresh the list
+          fetchStaff();
           
-          // Notify dashboard
           if (window.EventBus) {
             window.EventBus.emit('staffDataChanged');
           }
@@ -1375,9 +2896,8 @@ const Staff = () => {
       console.log('📥 Status update response:', data);
 
       if (data.success) {
-        fetchStaff(); // Refresh the list
+        fetchStaff();
         
-        // Notify dashboard
         if (window.EventBus) {
           window.EventBus.emit('staffDataChanged');
         }
@@ -1395,6 +2915,7 @@ const Staff = () => {
       name: '', role: '', department: '', shift: '',
       status: 'On Duty', contact: '', email: '', salary: '', joinDate: ''
     });
+    setFormErrors({});
   };
 
   // Filter staff
@@ -1443,7 +2964,7 @@ const Staff = () => {
         </button>
         <button 
           className="btn" 
-          onClick={() => window.open('http://localhost:8002/api/staff', '_blank')}
+          onClick={() => window.open('http://localhost:8005/api/staff', '_blank')}
         >
           Check API Directly
         </button>
@@ -1521,23 +3042,7 @@ const Staff = () => {
         </div>
       </div>
 
-      {/* Debug Info - Remove in production */}
-      {staff.length === 0 && (
-        <div className="debug-info" style={{ padding: '20px', background: '#f0f0f0', margin: '20px', borderRadius: '8px' }}>
-          <h4>Debug Information:</h4>
-          <p>API URL: {API_URL}/api/staff</p>
-          <p>Staff Array Length: {staff.length}</p>
-          <p>Check browser console for more details (F12)</p>
-          <button 
-            className="btn btn-primary" 
-            onClick={() => window.open(`${API_URL}/api/staff`, '_blank')}
-          >
-            Test API in New Tab
-          </button>
-        </div>
-      )}
-
-      {/* Add/Edit Modal */}
+      {/* Add/Edit Modal with Validation */}
       {showForm && (
         <div className="modal-overlay" onClick={() => setShowForm(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -1552,12 +3057,20 @@ const Staff = () => {
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="Enter full name"
+                    className={formErrors.name ? 'error' : ''}
                     required
                   />
+                  {formErrors.name && <span className="error-message">{formErrors.name}</span>}
                 </div>
                 <div className="form-group">
                   <label>Role *</label>
-                  <select name="role" value={formData.role} onChange={handleInputChange} required>
+                  <select 
+                    name="role" 
+                    value={formData.role} 
+                    onChange={handleInputChange}
+                    className={formErrors.role ? 'error' : ''}
+                    required
+                  >
                     <option value="">Select Role</option>
                     <option value="Doctor">Doctor</option>
                     <option value="Nurse">Nurse</option>
@@ -1568,6 +3081,7 @@ const Staff = () => {
                     <option value="Cleaner">Cleaner</option>
                     <option value="Security">Security</option>
                   </select>
+                  {formErrors.role && <span className="error-message">{formErrors.role}</span>}
                 </div>
               </div>
 
@@ -1584,13 +3098,20 @@ const Staff = () => {
                 </div>
                 <div className="form-group">
                   <label>Shift *</label>
-                  <select name="shift" value={formData.shift} onChange={handleInputChange} required>
+                  <select 
+                    name="shift" 
+                    value={formData.shift} 
+                    onChange={handleInputChange}
+                    className={formErrors.shift ? 'error' : ''}
+                    required
+                  >
                     <option value="">Select Shift</option>
                     <option value="Morning (8am-4pm)">Morning (8am-4pm)</option>
                     <option value="Evening (4pm-12am)">Evening (4pm-12am)</option>
                     <option value="Night (12am-8am)">Night (12am-8am)</option>
                     <option value="General (10am-6pm)">General (10am-6pm)</option>
                   </select>
+                  {formErrors.shift && <span className="error-message">{formErrors.shift}</span>}
                 </div>
               </div>
 
@@ -1602,9 +3123,13 @@ const Staff = () => {
                     name="contact"
                     value={formData.contact}
                     onChange={handleInputChange}
-                    placeholder="+91 98765 43210"
+                    placeholder="10-digit mobile number"
+                    maxLength="10"
+                    className={formErrors.contact ? 'error' : ''}
                     required
                   />
+                  {formErrors.contact && <span className="error-message">{formErrors.contact}</span>}
+                  <small className="field-hint">Must be 10 digits starting with 7,8,9</small>
                 </div>
                 <div className="form-group">
                   <label>Email</label>
@@ -1614,7 +3139,9 @@ const Staff = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     placeholder="email@example.com"
+                    className={formErrors.email ? 'error' : ''}
                   />
+                  {formErrors.email && <span className="error-message">{formErrors.email}</span>}
                 </div>
               </div>
 
@@ -1629,14 +3156,17 @@ const Staff = () => {
                   />
                 </div>
                 <div className="form-group">
-                  <label>Salary (₹)</label>
+                  <label>Salary (₹) *</label>
                   <input
                     type="text"
                     name="salary"
                     value={formData.salary}
                     onChange={handleInputChange}
-                    placeholder="e.g., ₹25,000"
+                    placeholder="Minimum ₹5,000"
+                    className={formErrors.salary ? 'error' : ''}
                   />
+                  {formErrors.salary && <span className="error-message">{formErrors.salary}</span>}
+                  <small className="field-hint">Minimum ₹5,000, numbers only</small>
                 </div>
               </div>
 
@@ -1696,9 +3226,6 @@ const Staff = () => {
                   </span>
                 </div>
                 <div className="detail-row">
-                  <strong>Attendance:</strong> {showDetails.attendance || 'N/A'}
-                </div>
-                <div className="detail-row">
                   <strong>Contact:</strong> {showDetails.contact}
                 </div>
                 <div className="detail-row">
@@ -1708,7 +3235,7 @@ const Staff = () => {
                   <strong>Join Date:</strong> {showDetails.joinDate || 'N/A'}
                 </div>
                 <div className="detail-row">
-                  <strong>Salary:</strong> {showDetails.salary || 'N/A'}
+                  <strong>Salary:</strong> {showDetails.salary ? formatSalary(showDetails.salary.toString()) : 'N/A'}
                 </div>
               </div>
             </div>
@@ -1730,7 +3257,6 @@ const Staff = () => {
                 <th>Department</th>
                 <th>Shift</th>
                 <th>Status</th>
-                <th>Attendance</th>
                 <th>Contact</th>
                 <th>Actions</th>
               </tr>
@@ -1740,11 +3266,11 @@ const Staff = () => {
                 <tr key={member._id || member.id}>
                   <td>
                     <div className="staff-info">
-                      <img 
+                      {/* <img 
                         src={member.image || `https://ui-avatars.com/api/?name=${member.name?.replace(' ', '+')}&background=2196F3&color=fff&size=50`} 
                         alt={member.name} 
                         className="staff-image" 
-                      />
+                      /> */}
                       <div className="staff-name">
                         <span>{member.name}</span>
                         <small>{member.email}</small>
@@ -1763,17 +3289,6 @@ const Staff = () => {
                       {member.status}
                     </span>
                   </td>
-                  <td>
-                    <div className="attendance-cell">
-                      <span className="attendance-value">{member.attendance || '100%'}</span>
-                      <div className="attendance-bar">
-                        <div
-                          className="attendance-progress"
-                          style={{ width: member.attendance || '100%' }}
-                        ></div>
-                      </div>
-                    </div>
-                  </td>
                   <td>{member.contact}</td>
                   <td>
                     <div className="action-buttons">
@@ -1790,13 +3305,6 @@ const Staff = () => {
                         title="Edit"
                       >
                         ✏️
-                      </button>
-                      <button
-                        className="btn-icon toggle"
-                        onClick={() => handleToggleStatus(member._id || member.id)}
-                        title="Toggle Status"
-                      >
-                        🔄
                       </button>
                       <button
                         className="btn-icon delete"
