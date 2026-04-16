@@ -203,7 +203,7 @@
 // //   return (
 // //     <div className="staff-page">
 // //       <div className="page-header">
-// //         <h2>👥 Staff Management</h2>
+// //         <h2>👤 Staff Management</h2>
 // //         <button className="btn btn-primary" onClick={() => {
 // //           setEditingStaff(null);
 // //           setFormData({ name: '', role: '', department: '', shift: '', status: 'On Duty', contact: '', email: '', salary: '', joinDate: '' });
@@ -790,7 +790,7 @@
 //   return (
 //     <div className="staff-page">
 //       <div className="page-header">
-//         <h2>👥 Staff Management</h2>
+//         <h2>👤 Staff Management</h2>
 //         <button className="btn btn-primary" onClick={() => {
 //           setEditingStaff(null);
 //           setFormData({ name: '', role: '', department: '', shift: '', status: 'On Duty', contact: '', email: '', salary: '', joinDate: '' });
@@ -1454,7 +1454,7 @@
 //   return (
 //     <div className="staff-page">
 //       <div className="page-header">
-//         <h2>👥 Staff Management {staff.length > 0 && `(${staff.length})`}</h2>
+//         <h2>👤 Staff Management {staff.length > 0 && `(${staff.length})`}</h2>
 //         <button className="btn btn-primary" onClick={() => {
 //           setEditingStaff(null);
 //           resetForm();
@@ -2145,7 +2145,7 @@
 //   return (
 //     <div className="staff-page">
 //       <div className="page-header">
-//         <h2>👥 Staff Management {staff.length > 0 && `(${staff.length})`}</h2>
+//         <h2>👤 Staff Management {staff.length > 0 && `(${staff.length})`}</h2>
 //         <button className="btn btn-primary" onClick={() => {
 //           setEditingStaff(null);
 //           resetForm();
@@ -2975,7 +2975,7 @@ const Staff = () => {
   return (
     <div className="staff-page">
       <div className="page-header">
-        <h2>👥 Staff Management {staff.length > 0 && `(${staff.length})`}</h2>
+        <h2>👤 Staff Management {staff.length > 0 && `(${staff.length})`}</h2>
         <button className="btn btn-primary" onClick={() => {
           setEditingStaff(null);
           resetForm();
@@ -3200,12 +3200,12 @@ const Staff = () => {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>👤 Staff Details</h3>
             <div className="staff-details">
-              <div className="detail-avatar">
+              {/* <div className="detail-avatar">
                 <img 
                   src={showDetails.image || `https://ui-avatars.com/api/?name=${showDetails.name?.replace(' ', '+')}&background=2196F3&color=fff&size=100`} 
                   alt={showDetails.name} 
                 />
-              </div>
+              </div> */}
               <div className="detail-info">
                 <div className="detail-row">
                   <strong>Name:</strong> {showDetails.name}

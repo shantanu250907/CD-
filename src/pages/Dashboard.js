@@ -126,7 +126,7 @@
 // //         console.log('📥 Staff API response:', data);
 // //         staffCount = extractCount(data);
 // //         staffData = data.data || (Array.isArray(data) ? data : []);
-// //         console.log('👥 Staff count extracted:', staffCount);
+// //         console.log('👤 Staff count extracted:', staffCount);
 // //       } else {
 // //         console.warn('Failed to fetch staff data');
 // //       }
@@ -334,7 +334,7 @@
 // //           type: 'staff',
 // //           title: `New staff member joined: ${memberName}`,
 // //           time: timeAgo(createdAt),
-// //           icon: '👥',
+// //           icon: '👤',
 // //           color: '#9c27b0',
 // //           timestamp: createdAt ? new Date(createdAt).getTime() : Date.now()
 // //         });
@@ -388,7 +388,7 @@
 // //         type: 'staff',
 // //         title: 'New staff member joined: Priya Singh',
 // //         time: '3 hours ago',
-// //         icon: '👥',
+// //         icon: '👤',
 // //         color: '#9c27b0',
 // //         timestamp: Date.now() - 3 * 60 * 60 * 1000
 // //       }
@@ -472,7 +472,7 @@
 // //       id: 1,
 // //       title: 'Staff',
 // //       value: stats.staff,
-// //       icon: '👥',
+// //       icon: '👤',
 // //       color: '#2196F3',
 // //       bgColor: '#E3F2FD',
 // //     },
@@ -507,7 +507,7 @@
 // //     {
 // //       id: 1,
 // //       title: 'Add Staff',
-// //       icon: '👥',
+// //       icon: '👤',
 // //       color: '#2196F3',
 // //       path: '/staff'
 // //     },
@@ -800,7 +800,7 @@
 //         console.log('📥 Staff API response:', data);
 //         staffCount = extractCount(data);
 //         staffData = data.data || (Array.isArray(data) ? data : []);
-//         console.log('👥 Staff count:', staffCount);
+//         console.log('👤 Staff count:', staffCount);
 //       } else {
 //         console.warn('Failed to fetch staff data');
 //       }
@@ -1006,7 +1006,7 @@
 //           type: 'staff',
 //           title: `New staff member joined: ${memberName}`,
 //           time: timeAgo(createdAt),
-//           icon: '👥',
+//           icon: '👤',
 //           color: '#9c27b0',
 //           timestamp: createdAt ? new Date(createdAt).getTime() : Date.now()
 //         });
@@ -1060,7 +1060,7 @@
 //         type: 'staff',
 //         title: 'New staff member joined: Priya Singh',
 //         time: '3 hours ago',
-//         icon: '👥',
+//         icon: '👤',
 //         color: '#9c27b0',
 //         timestamp: Date.now() - 3 * 60 * 60 * 1000
 //       }
@@ -1145,7 +1145,7 @@
 //       id: 1,
 //       title: 'Staff',
 //       value: stats.staff,
-//       icon: '👥',
+//       icon: '👤',
 //       color: '#2196F3',
 //       bgColor: '#E3F2FD',
 //     },
@@ -1180,7 +1180,7 @@
 //     {
 //       id: 1,
 //       title: 'Add Staff',
-//       icon: '👥',
+//       icon: '👤',
 //       color: '#2196F3',
 //       path: '/staff'
 //     },
@@ -1473,7 +1473,7 @@ const Dashboard = () => {
         console.log('📥 Staff API response:', data);
         staffCount = extractCount(data);
         staffData = data.data || (Array.isArray(data) ? data : []);
-        console.log('👥 Staff count:', staffCount);
+        console.log('👤 Staff count:', staffCount);
       } else {
         console.warn('Failed to fetch staff data');
       }
@@ -1605,7 +1605,7 @@ const Dashboard = () => {
           type: 'staff',
           title: `New staff member joined: ${memberName}`,
           time: timeAgo(createdAt),
-          icon: '👥',
+          icon: '👤',
           color: '#9c27b0',
           timestamp: createdAt ? new Date(createdAt).getTime() : Date.now()
         });
@@ -1650,7 +1650,7 @@ const Dashboard = () => {
         type: 'staff',
         title: 'New staff member joined: Priya Singh',
         time: '2 hours ago',
-        icon: '👥',
+        icon: '👤',
         color: '#9c27b0',
         timestamp: Date.now() - 2 * 60 * 60 * 1000
       }
@@ -1730,7 +1730,7 @@ const Dashboard = () => {
       id: 1,
       title: 'Staff',
       value: stats.staff,
-      icon: '👥',
+      icon: '👤',
       color: '#2196F3',
       bgColor: '#E3F2FD',
     },
@@ -1757,7 +1757,7 @@ const Dashboard = () => {
     {
       id: 1,
       title: 'Staff Management',
-      icon: '👥',
+      icon: '👤',
       color: '#2196F3',
       path: '/staff'
     },
@@ -1805,7 +1805,7 @@ const Dashboard = () => {
       <div className="dashboard-top-bar">
         <div className="top-bar-left">
           <div className="hospital-name">
-            <span className="hospital-icon">🏥</span>
+            {/* <span className="hospital-icon">🏥</span> */}
             <h2>Omkar Clinic - Admin Panel</h2>
           </div>
         </div>

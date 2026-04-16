@@ -562,7 +562,7 @@ function Laboratory() {
       {/* STATS CARDS */}
       <div className="stats-row">
         <div className="stat-card" style={{ borderLeft: "4px solid #667eea" }}>
-          <div className="stat-icon">👥</div>
+          <div className="stat-icon">👤</div>
           <div className="stat-info">
             <span className="stat-label">Total Lab Patients</span>
             <span className="stat-value">{stats?.total || 0}</span>

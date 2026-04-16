@@ -74,7 +74,7 @@
 }
 
 .page-header h2::before {
-  content: '👥';
+  /* content: '👥'; */
   font-size: 2rem;
   -webkit-text-fill-color: initial;
   color: var(--primary-blue);
@@ -402,7 +402,7 @@ tr:hover .staff-image {
 
 .status-on-leave {
   background: var(--danger-light);
-  color: #991b1b;
+  color: #9a2626;
   border: 1px solid #fecaca;
 }
 
@@ -1939,7 +1939,7 @@ label.required::after {
   gap: 15px;
   margin-top: 30px;
   justify-content: flex-end;
-  border-top: 2px dashed #e9ecef;
+  /* border-top: 2px dashed #e9ecef; */
   padding-top: 25px;
 }
 

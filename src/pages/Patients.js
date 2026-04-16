@@ -216,7 +216,7 @@ const Patients = () => {
           onClick={() => handleStatClick('all')}
           style={{ cursor: 'pointer' }}
         >
-          <div className="stat-icon">👥</div>
+          <div className="stat-icon">👤</div>
           <div className="stat-content">
             <span className="stat-label">Total Patients</span>
             <span className="stat-value">{stats.total}</span>
@@ -508,7 +508,7 @@ const Patients = () => {
                   <span className="detail-value">{selectedPatient.alternatePhone || 'N/A'}</span>
                 </div>
                 <div className="detail-card">
-                  <span className="detail-icon">👥</span>
+                  <span className="detail-icon">👤</span>
                   <span className="detail-label">Profession</span>
                   <span className="detail-value">{selectedPatient.profession || 'N/A'}</span>
                 </div>
@@ -588,7 +588,7 @@ const Patients = () => {
       {/* Empty State */}
       {filteredPatients.length === 0 && (
         <div className="empty-state">
-          <div className="empty-icon">👥</div>
+          <div className="empty-icon">👤</div>
           <h3>No Patients Found</h3>
           <p>No patients match your current filters.</p>
           <button className="empty-btn" onClick={() => {

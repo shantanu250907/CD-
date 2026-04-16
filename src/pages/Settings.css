@@ -63,12 +63,12 @@
   background-clip: text;
 }
 
-.page-title::before {
+/* .page-title::before {
   content: '⚙️';
   font-size: 2rem;
   -webkit-text-fill-color: initial;
   color: var(--primary-blue);
-}
+} */
 
 /* ==================== SETTINGS CARD ==================== */
 .settings-card {
@@ -137,7 +137,7 @@
 }
 
 .settings-card h3::before {
-  content: '🏥';
+  /* content: '🏥'; */
   font-size: 1.8rem;
   background: linear-gradient(135deg, var(--primary-ultra-light), var(--white));
   padding: 0.5rem;
@@ -335,10 +335,11 @@
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
-  margin-top: 2.5rem;
+  /* margin-top: 2.5rem; */
   padding-top: 1.5rem;
-  border-top: 2px solid var(--border-gray);
+  /* border-top: 2px solid var(--border-gray); */
   position: relative;
+  margin-bottom:8%;
   z-index: 2;
 }
 
